@@ -15,5 +15,7 @@
 #define FIFO_EXCHANGE "/tmp/pe_exchange_%d"
 #define FIFO_TRADER "/tmp/pe_trader_%d"
 #define FEE_PERCENTAGE 1
+#define BUF_SIZE (64)
+#define PROD_SIZE (16)
 
 #endif

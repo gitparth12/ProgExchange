@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     }
     handle_products(pexchange->product_list, fproducts, &pexchange->num_products);
 
-    // Make fifos and add traders to dyn_array
+    // MAKE FIFOS AND ADD TRADER TO DYN_ARRAY
     char* path;
     pid_t pid;
     for (int i = 2; i < argc; i++) {
@@ -65,11 +65,11 @@ int main(int argc, char** argv) {
         }
         printf("%s Created FIFO %s\n", LOG_PREFIX, path);
         free(path);
+
         // Adding trader to list
-        // printf("%s\n", new_trader->exchange_pipe_path);
         dyn_array_add(pexchange->traders, (void*) new_trader);
 
-        // Start trader
+        // LAUNCH TRADER BINARY
         printf("%s Starting trader %d (%s)\n", LOG_PREFIX, i-2, new_trader->binary);
         if ((pid = fork()) < 0) {
             printf("\nTrader id: %d\n", i);
@@ -83,8 +83,19 @@ int main(int argc, char** argv) {
             printf("\nTrader id: %d\n", i);
             perror("Error during exec\n");
             free(id);
+            fclose(fproducts);
+            dyn_array_free_values(pexchange->product_list);
+            dyn_array_free(pexchange->product_list);
+            dyn_array_free_traders(pexchange->traders);
+            dyn_array_free(pexchange->traders);
+            exit(2);
         }
-        // connect to both pipes in parent
+        else {
+            // store pid in trader struct
+            new_trader->pid = pid;
+        }
+
+        // CONNECT TO PIPES
         if ((new_trader->exchange_pipe = open(new_trader->exchange_pipe_path, O_WRONLY)) == -1) {
             printf("\nTrader id: %d\n", i);
             perror("Error opening exchange_pipe\n");
@@ -100,6 +111,20 @@ int main(int argc, char** argv) {
             printf("%s Connected to %s\n", LOG_PREFIX, new_trader->trader_pipe_path);
         }
     }
+
+    // SEND MARKET OPEN TO EACH TRADER
+    for (int i = 0; i < pexchange->traders->size; i++) {
+        /*
+        write(trader_pipe, message, strlen(message));
+        kill(getppid(), SIGUSR1);
+        */
+        trader* current = pexchange->traders->array[i];
+        char* message = "MARKET OPEN;";
+        write(current->trader_pipe, message, strlen(message));
+        kill(current->pid, SIGUSR1);
+    }
+
+
     
     // test printing traders
     /*
@@ -109,7 +134,7 @@ int main(int argc, char** argv) {
     */
 
 
-    // FREE all dynamic arrays and close files and stuff
+    // FREE ALL MALLOCED MEMORY AND CLOSE FILES
     fclose(fproducts);
     dyn_array_free_values(pexchange->product_list);
     dyn_array_free(pexchange->product_list);

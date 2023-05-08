@@ -11,7 +11,13 @@
 #include "dyn_array.h"
 #include "pe_common.h"
 
+
 void handle_products(dyn_array* product_list, FILE* fproducts, int* num_products);
+trader* initialize_trader(exchange* pexchange, int i, char** argv);
+void launch_trader(exchange* pexchange, trader* new_trader, int i, char** argv);
+void market_open(exchange* pexchange);
+void free_memory(exchange* pexchange);
+
 
 int main(int argc, char** argv) {
     // ERROR CHECKING
@@ -40,114 +46,19 @@ int main(int argc, char** argv) {
     }
     handle_products(pexchange->product_list, fproducts, &pexchange->num_products);
 
-    // MAKE FIFOS AND ADD TRADER TO DYN_ARRAY
-    char* path;
-    pid_t pid;
     for (int i = 2; i < argc; i++) {
-        // Make a new trader
-        trader* new_trader = (trader*) malloc(sizeof(trader));
-        asprintf(&new_trader->binary, "%s", argv[i]);
-        // exchange fifo
-        asprintf(&path, FIFO_EXCHANGE, i-2);
-        asprintf(&new_trader->exchange_pipe_path, "%s", path);
-        if (mkfifo(path, 0666) == -1) {
-            printf("\nTrader id: %d\n", i-2);
-            perror("Error making exchange fifo");
-        }
-        printf("%s Created FIFO %s\n", LOG_PREFIX, path);
-        free(path);
-        // trader fifo
-        asprintf(&path, FIFO_TRADER, i-2);
-        asprintf(&new_trader->trader_pipe_path, "%s", path);
-        if (mkfifo(path, 0666) == -1) {
-            printf("\nTrader id: %d\n", i-2);
-            perror("Error making trader fifo");
-        }
-        printf("%s Created FIFO %s\n", LOG_PREFIX, path);
-        free(path);
-
-        // Adding trader to list
-        dyn_array_add(pexchange->traders, (void*) new_trader);
-
-        // LAUNCH TRADER BINARY
-        printf("%s Starting trader %d (%s)\n", LOG_PREFIX, i-2, new_trader->binary);
-        if ((pid = fork()) < 0) {
-            printf("\nTrader id: %d\n", i);
-            perror("Error forking\n");
-        }
-        if (pid == 0) { // child process
-            // exec the child to trader binary
-            char* id;
-            asprintf(&id, "%d", i-2);
-            execl(new_trader->binary, strrchr(new_trader->binary, '/'), id, (char*) NULL);            
-            printf("\nTrader id: %d\n", i);
-            perror("Error during exec\n");
-            free(id);
-            fclose(fproducts);
-            dyn_array_free_values(pexchange->product_list);
-            dyn_array_free(pexchange->product_list);
-            dyn_array_free_traders(pexchange->traders);
-            dyn_array_free(pexchange->traders);
-            exit(2);
-        }
-        else {
-            // store pid in trader struct
-            new_trader->pid = pid;
-        }
-
-        // CONNECT TO PIPES
-        if ((new_trader->exchange_pipe = open(new_trader->exchange_pipe_path, O_WRONLY)) == -1) {
-            printf("\nTrader id: %d\n", i);
-            perror("Error opening exchange_pipe\n");
-        }
-        else {
-            printf("%s Connected to %s\n", LOG_PREFIX, new_trader->exchange_pipe_path);
-        }
-        if ((new_trader->trader_pipe = open(new_trader->trader_pipe_path, O_RDONLY)) == -1) {
-            printf("\nTrader id: %d\n", i);
-            perror("Error opening trader_pipe\n");
-        }
-        else {
-            printf("%s Connected to %s\n", LOG_PREFIX, new_trader->trader_pipe_path);
-        }
+        // Initialise trader and make fifos for it
+        trader* new_trader = initialize_trader(pexchange, i, argv);
+        // Launch the trader binary
+        launch_trader(pexchange, new_trader, i, argv);
     }
 
-    // SEND MARKET OPEN TO EACH TRADER
-    for (int i = 0; i < pexchange->traders->size; i++) {
-        /*
-        write(trader_pipe, message, strlen(message));
-        kill(getppid(), SIGUSR1);
-        */
-        trader* current = pexchange->traders->array[i];
-        char* message = "MARKET OPEN;";
-        write(current->exchange_pipe, message, strlen(message));
-        kill(current->pid, SIGUSR1);
-    }
+    // Market open
+    market_open(pexchange);
 
 
-    
-    // test printing traders
-    /*
-    for (int i = 0; i < pexchange->traders->size; i++) {
-        printf("%s", ((trader*)(pexchange->traders->array[i]))->binary);
-    }
-    */
-
-
-    // FREE ALL MALLOCED MEMORY AND CLOSE FILES/PIPES
-    fclose(fproducts);
-    for (int i = 0; i < pexchange->traders->size; i++) {
-        trader* current = pexchange->traders->array[i];
-        close(current->trader_pipe);
-        unlink(current->trader_pipe_path);
-        close(current->exchange_pipe);
-        unlink(current->exchange_pipe_path);
-    }
-    dyn_array_free_values(pexchange->product_list);
-    dyn_array_free(pexchange->product_list);
-    dyn_array_free_traders(pexchange->traders);
-    dyn_array_free(pexchange->traders);
-
+    // Free all allocated memory from dynamic arrays
+    free_memory(pexchange);
     return 0;
 }
 
@@ -166,6 +77,107 @@ void handle_products(dyn_array* product_list, FILE* fproducts, int* num_products
         printf(" %s", (char*)product_list->array[product_list->size-1]);
     }
     printf("\n");
+    fclose(fproducts);
+}
+
+trader* initialize_trader(exchange* pexchange, int i, char** argv) {
+    char* path;
+    // Make a new trader
+    trader* new_trader = (trader*) malloc(sizeof(trader));
+
+    asprintf(&new_trader->binary, "%s", argv[i]);
+    // exchange fifo
+    asprintf(&path, FIFO_EXCHANGE, i);
+    asprintf(&new_trader->exchange_pipe_path, "%s", path);
+    if (mkfifo(path, 0666) == -1) {
+        printf("\nTrader id: %d\n", i-2);
+        perror("Error making exchange fifo");
+    }
+    printf("%s Created FIFO %s\n", LOG_PREFIX, path);
+    free(path);
+    // trader fifo
+    asprintf(&path, FIFO_TRADER, i-2);
+    asprintf(&new_trader->trader_pipe_path, "%s", path);
+    if (mkfifo(path, 0666) == -1) {
+        printf("\nTrader id: %d\n", i-2);
+        perror("Error making trader fifo");
+    }
+    printf("%s Created FIFO %s\n", LOG_PREFIX, path);
+    free(path);
+
+    // Adding trader to list
+    dyn_array_add(pexchange->traders, (void*) new_trader);
+    return new_trader;
+}
+
+void launch_trader(exchange* pexchange, trader* new_trader, int i, char** argv) {
+    pid_t pid;
+    printf("%s Starting trader %d (%s)\n", LOG_PREFIX, i-2, new_trader->binary);
+    if ((pid = fork()) < 0) {
+        printf("\nTrader id: %d\n", i);
+        perror("Error forking\n");
+    }
+    if (pid == 0) { // child process
+                    // exec the child to trader binary
+        char* id;
+        asprintf(&id, "%d", i-2);
+        execl(new_trader->binary, strrchr(new_trader->binary, '/'), id, (char*) NULL);            
+        printf("\nTrader id: %d\n", i);
+        perror("Error during exec\n");
+        free(id);
+        // fclose(fproducts);
+        dyn_array_free_values(pexchange->product_list);
+        dyn_array_free(pexchange->product_list);
+        dyn_array_free_traders(pexchange->traders);
+        dyn_array_free(pexchange->traders);
+        exit(2);
+    }
+    else {
+        // store pid in trader struct
+        new_trader->pid = pid;
+    }
+
+    // CONNECT TO PIPES
+    if ((new_trader->exchange_pipe = open(new_trader->exchange_pipe_path, O_WRONLY)) == -1) {
+        printf("\nTrader id: %d\n", i);
+        perror("Error opening exchange_pipe\n");
+    }
+    else {
+        printf("%s Connected to %s\n", LOG_PREFIX, new_trader->exchange_pipe_path);
+    }
+    if ((new_trader->trader_pipe = open(new_trader->trader_pipe_path, O_RDONLY)) == -1) {
+        printf("\nTrader id: %d\n", i);
+        perror("Error opening trader_pipe\n");
+    }
+    else {
+        printf("%s Connected to %s\n", LOG_PREFIX, new_trader->trader_pipe_path);
+    }
+}
+
+void market_open(exchange* pexchange) {
+    for (int i = 0; i < pexchange->traders->size; i++) {
+        trader* current = pexchange->traders->array[i];
+        char* message = "MARKET OPEN;";
+        if (write(current->exchange_pipe, message, strlen(message)) == -1) {
+            printf("\nTrader id: %d\n", i);
+            perror("Error writing MARKET OPEN;\n");
+        }
+        kill(current->pid, SIGUSR1);
+    }
+}
+
+void free_memory(exchange* pexchange) {
+    for (int i = 0; i < pexchange->traders->size; i++) {
+        trader* current = pexchange->traders->array[i];
+        close(current->trader_pipe);
+        unlink(current->trader_pipe_path);
+        close(current->exchange_pipe);
+        unlink(current->exchange_pipe_path);
+    }
+    dyn_array_free_values(pexchange->product_list);
+    dyn_array_free(pexchange->product_list);
+    dyn_array_free_traders(pexchange->traders);
+    dyn_array_free(pexchange->traders);
 }
 
 /*

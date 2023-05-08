@@ -37,6 +37,7 @@ typedef struct{
     char* binary;
     char* exchange_pipe;
     char* trader_pipe;
+    pid_t pid;
 } trader;
 
 #endif

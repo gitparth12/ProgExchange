@@ -42,6 +42,7 @@ int main(int argc, char** argv) {
 
     // Make fifos and add traders to dyn_array
     char* path;
+    pid_t pid;
     for (int i = 2; i < argc; i++) {
         // Make a new trader
         trader* new_trader = (trader*) malloc(sizeof(trader));
@@ -53,6 +54,7 @@ int main(int argc, char** argv) {
             printf("\nTrader id: %d\n", i);
             perror("Error making exchange fifo");
         }
+        printf("%s Created FIFO %s\n", LOG_PREFIX, path);
         free(path);
         // trader fifo
         asprintf(&path, FIFO_TRADER, i-2);
@@ -61,10 +63,27 @@ int main(int argc, char** argv) {
             printf("\nTrader id: %d\n", i);
             perror("Error making trader fifo");
         }
+        printf("%s Created FIFO %s\n", LOG_PREFIX, path);
         free(path);
         // Adding trader to list
         // printf("%s\n", new_trader->exchange_pipe);
         dyn_array_add(pexchange->traders, (void*) new_trader);
+
+        // Start trader
+        printf("%s Starting trader %d (%s)\n", LOG_PREFIX, i, new_trader->binary);
+        if ((pid = fork()) < 0) {
+            printf("\nTrader id: %d\n", i);
+            perror("Error forking\n");
+        }
+        if (pid == 0) { // child process
+            // exec the child to trader binary
+            char* id;
+            asprintf(&id, "%d", i);
+            execl(new_trader->binary, strrchr(new_trader->binary, '/'), id, (char*) NULL);            
+            printf("\nTrader id: %d\n", i);
+            perror("Error during exec\n");
+            free(id);
+        }
     }
     
     // test printing traders

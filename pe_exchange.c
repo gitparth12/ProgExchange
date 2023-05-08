@@ -87,7 +87,7 @@ trader* initialize_trader(exchange* pexchange, int i, char** argv) {
 
     asprintf(&new_trader->binary, "%s", argv[i]);
     // exchange fifo
-    asprintf(&path, FIFO_EXCHANGE, i);
+    asprintf(&path, FIFO_EXCHANGE, i-2);
     asprintf(&new_trader->exchange_pipe_path, "%s", path);
     if (mkfifo(path, 0666) == -1) {
         printf("\nTrader id: %d\n", i-2);

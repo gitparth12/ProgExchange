@@ -119,6 +119,7 @@ int main(int argc, char** argv) {
         kill(getppid(), SIGUSR1);
         */
         trader* current = pexchange->traders->array[i];
+        printf("%ld\n", (long) current->pid);
         char* message = "MARKET OPEN;";
         write(current->trader_pipe, message, strlen(message));
         kill(current->pid, SIGUSR1);

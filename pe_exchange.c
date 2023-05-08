@@ -136,15 +136,17 @@ int main(int argc, char** argv) {
 
     // FREE ALL MALLOCED MEMORY AND CLOSE FILES/PIPES
     fclose(fproducts);
+    for (int i = 0; i < pexchange->traders->size; i++) {
+        trader* current = pexchange->traders->array[i];
+        close(current->trader_pipe);
+        unlink(current->trader_pipe_path);
+        close(current->exchange_pipe);
+        unlink(current->exchange_pipe_path);
+    }
     dyn_array_free_values(pexchange->product_list);
     dyn_array_free(pexchange->product_list);
     dyn_array_free_traders(pexchange->traders);
     dyn_array_free(pexchange->traders);
-    for (int i = 0; i < pexchange->traders->size; i++) {
-        trader* current = pexchange->traders->array[i];
-        close(current->trader_pipe);
-        close(current->exchange_pipe);
-    }
 
     return 0;
 }

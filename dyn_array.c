@@ -102,8 +102,8 @@ void dyn_array_free_traders(dyn_array* dyn) {
     for (int i = 0; i < dyn->size; i++) {
         // free trader attributes
         free(((trader*)(dyn->array[i]))->binary);
-        free(((trader*)(dyn->array[i]))->exchange_pipe);
-        free(((trader*)(dyn->array[i]))->trader_pipe);
+        free(((trader*)(dyn->array[i]))->exchange_pipe_path);
+        free(((trader*)(dyn->array[i]))->trader_pipe_path);
         // free traders themselves
         free(dyn->array[i]);
     }

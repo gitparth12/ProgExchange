@@ -35,8 +35,10 @@ typedef struct{
 
 typedef struct{
     char* binary;
-    char* exchange_pipe;
-    char* trader_pipe;
+    int exchange_pipe;
+    char* exchange_pipe_path;
+    int trader_pipe;
+    char* trader_pipe_path;
     pid_t pid;
 } trader;
 

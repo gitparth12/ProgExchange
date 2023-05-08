@@ -49,28 +49,28 @@ int main(int argc, char** argv) {
         asprintf(&new_trader->binary, "%s", argv[i]);
         // exchange fifo
         asprintf(&path, FIFO_EXCHANGE, i-2);
-        asprintf(&new_trader->exchange_pipe, "%s", path);
+        asprintf(&new_trader->exchange_pipe_path, "%s", path);
         if (mkfifo(path, 0666) == -1) {
-            printf("\nTrader id: %d\n", i);
+            printf("\nTrader id: %d\n", i-2);
             perror("Error making exchange fifo");
         }
         printf("%s Created FIFO %s\n", LOG_PREFIX, path);
         free(path);
         // trader fifo
         asprintf(&path, FIFO_TRADER, i-2);
-        asprintf(&new_trader->trader_pipe, "%s", path);
+        asprintf(&new_trader->trader_pipe_path, "%s", path);
         if (mkfifo(path, 0666) == -1) {
-            printf("\nTrader id: %d\n", i);
+            printf("\nTrader id: %d\n", i-2);
             perror("Error making trader fifo");
         }
         printf("%s Created FIFO %s\n", LOG_PREFIX, path);
         free(path);
         // Adding trader to list
-        // printf("%s\n", new_trader->exchange_pipe);
+        // printf("%s\n", new_trader->exchange_pipe_path);
         dyn_array_add(pexchange->traders, (void*) new_trader);
 
         // Start trader
-        printf("%s Starting trader %d (%s)\n", LOG_PREFIX, i, new_trader->binary);
+        printf("%s Starting trader %d (%s)\n", LOG_PREFIX, i-2, new_trader->binary);
         if ((pid = fork()) < 0) {
             printf("\nTrader id: %d\n", i);
             perror("Error forking\n");
@@ -78,11 +78,26 @@ int main(int argc, char** argv) {
         if (pid == 0) { // child process
             // exec the child to trader binary
             char* id;
-            asprintf(&id, "%d", i);
+            asprintf(&id, "%d", i-2);
             execl(new_trader->binary, strrchr(new_trader->binary, '/'), id, (char*) NULL);            
             printf("\nTrader id: %d\n", i);
             perror("Error during exec\n");
             free(id);
+        }
+        // connect to both pipes in parent
+        if ((new_trader->exchange_pipe = open(new_trader->exchange_pipe_path, O_WRONLY)) == -1) {
+            printf("\nTrader id: %d\n", i);
+            perror("Error opening exchange_pipe\n");
+        }
+        else {
+            printf("%s Connected to %s\n", LOG_PREFIX, new_trader->exchange_pipe_path);
+        }
+        if ((new_trader->trader_pipe = open(new_trader->trader_pipe_path, O_RDONLY)) == -1) {
+            printf("\nTrader id: %d\n", i);
+            perror("Error opening trader_pipe\n");
+        }
+        else {
+            printf("%s Connected to %s\n", LOG_PREFIX, new_trader->trader_pipe_path);
         }
     }
     

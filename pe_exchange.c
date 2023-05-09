@@ -10,7 +10,7 @@
 
 volatile sig_atomic_t signo = 0;
 volatile siginfo_t siginfo;
-dyn_array* sigusr1_queue;
+dyn_array* sigusr_pids;
 volatile bool sigusr = false;
 void handler1(int signal_num, siginfo_t* info, void* ucontext) {
     sigset_t mask;
@@ -24,7 +24,7 @@ void handler1(int signal_num, siginfo_t* info, void* ucontext) {
     siginfo = *info;
     pid_t* pid = (pid_t*) malloc(sizeof(pid_t));
     *pid = info->si_pid;
-    dyn_array_add(sigusr1_queue, (void*) pid);
+    dyn_array_add(sigusr_pids, (void*) pid);
 
     sigprocmask(SIG_UNBLOCK, &mask, NULL);
 }
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     }
 
     // initialize sigusr1 dynarray
-    sigusr1_queue = dyn_array_init();
+    sigusr_pids = dyn_array_init();
     // register signal handler
     struct sigaction sig = {
         .sa_sigaction = &handler1,
@@ -118,6 +118,10 @@ int main(int argc, char** argv) {
             printf("%s Exchange fees collected: $%d\n", LOG_PREFIX, pexchange->fee);
             break;
         }
+    }
+
+    for (int i = 0; i < sigusr_pids->size; i++) {
+        printf("%ld\n", (long) *((pid_t*)sigusr_pids));
     }
 
     // Free all allocated memory from dynamic arrays

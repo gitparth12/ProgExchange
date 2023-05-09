@@ -110,4 +110,23 @@ void dyn_array_free_traders(dyn_array* dyn) {
     return;
 }
 
+void dyn_array_delete_trader(dyn_array* dyn, int index) {
+    // free trader memory
+    free(((trader*)(dyn->array[index]))->binary);
+    free(((trader*)(dyn->array[index]))->exchange_pipe_path);
+    free(((trader*)(dyn->array[index]))->trader_pipe_path);
+    // free traders themselves
+    free(dyn->array[index]);
+    
+    // We shift everything to the right of the index left by one.
+    int i = index;
+    while (i < dyn->size - 1) {
+        dyn->array[i] = dyn->array[i + 1];
+        i++;
+    }
+
+    dyn->size--;
+    return;
+}
+
 /* End of copied code */

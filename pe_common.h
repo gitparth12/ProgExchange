@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #define FIFO_EXCHANGE "/tmp/pe_exchange_%d"
 #define FIFO_TRADER "/tmp/pe_trader_%d"
@@ -36,10 +37,19 @@ typedef struct{
 typedef struct{
     char* binary;
     int exchange_pipe;
+    FILE* fexchange_pipe;
     char* exchange_pipe_path;
     int trader_pipe;
+    FILE* ftrader_pipe;
     char* trader_pipe_path;
     pid_t pid;
 } trader;
+
+typedef enum {
+    ACCEPTED,
+    AMENDED,
+    CANCELLED,
+    INVALID,
+} command;
 
 #endif

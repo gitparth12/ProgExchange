@@ -84,6 +84,7 @@ int main(int argc, char** argv) {
 
     // Event loop
     while (1) {
+        pause();
         // check for SIGPIPE
         if (sigpipe || sigchld) {
             sigpipe = false;

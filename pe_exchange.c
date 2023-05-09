@@ -124,6 +124,7 @@ int main(int argc, char** argv) {
         printf("%ld\n", (long) *((pid_t*)sigusr_pids->array[i]));
     }
     dyn_array_free_values(sigusr_pids);
+    dyn_array_free(sigusr_pids);
     // Free all allocated memory from dynamic arrays
     free_memory(pexchange);
     return 0;

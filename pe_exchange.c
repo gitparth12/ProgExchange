@@ -99,6 +99,7 @@ int main(int argc, char** argv) {
             }
         }
     }
+    // comment for marking
 
     // Free all allocated memory from dynamic arrays
     free_memory(pexchange);

@@ -76,6 +76,7 @@ int main(int argc, char** argv) {
         .product_list = dyn_array_init(),
         .traders = dyn_array_init(),
         .num_products = 0,
+        .fee = 0.0,
     };
     exchange* pexchange = &exchange_data;
 
@@ -86,7 +87,7 @@ int main(int argc, char** argv) {
         // check for SIGPIPE
         if (sigpipe || sigchld) {
             sigpipe = false;
-            sigchld = false;
+            sigchld = true;
             for (int i = 0; i < pexchange->traders->size; i++) {
                 trader* current = pexchange->traders->array[i];
                 if (current->pid == siginfo.si_pid) {
@@ -99,8 +100,12 @@ int main(int argc, char** argv) {
                 }
             }
         }
+        if (pexchange->traders->size == 0) {
+            printf("%s Trading completed\n", LOG_PREFIX);
+            printf("%s Exchange fees collected: $%d\n", LOG_PREFIX, pexchange->fee);
+            break;
+        }
     }
-    // comment for marking
 
     // Free all allocated memory from dynamic arrays
     free_memory(pexchange);

@@ -9,21 +9,33 @@
 
 volatile sig_atomic_t signo = 0;
 volatile siginfo_t siginfo;
-bool sigusr = false;
+dyn_array* sigusr1_queue;
+volatile bool sigusr = false;
 void handler1(int signal_num, siginfo_t* info, void* ucontext) {
+    sigset_t mask;
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGUSR1);
+    sigprocmask(SIG_BLOCK, &mask, NULL);
+    
+    // Do some work that may take a while
     sigusr = true;
     signo = signal_num;
     siginfo = *info;
+    pid_t* pid = (pid_t*) malloc(sizeof(pid_t));
+    *pid = info->si_pid;
+    dyn_array_add(sigusr1_queue, (void*) pid);
+
+    sigprocmask(SIG_UNBLOCK, &mask, NULL);
 }
 
-bool sigpipe = false;
+volatile bool sigpipe = false;
 void handler2(int signal_num, siginfo_t* info, void* ucontext) {
     sigpipe = true;
     signo = signal_num;
     siginfo = *info;
 }
 
-bool sigchld = false;
+volatile bool sigchld = false;
 void handler3(int signal_num, siginfo_t* info, void* ucontext) {
     sigchld = true;
     signo = signal_num;
@@ -54,6 +66,8 @@ int main(int argc, char** argv) {
         .sa_sigaction = &handler1,
         .sa_flags = SA_SIGINFO
     };
+    sigemptyset(&sig.sa_mask);
+    sigaddset(&sig.sa_mask, SIGUSR1);
 
     // Registering signal handler
     if ((sigaction(SIGUSR1, &sig, NULL)) != 0) {
@@ -76,7 +90,7 @@ int main(int argc, char** argv) {
         .product_list = dyn_array_init(),
         .traders = dyn_array_init(),
         .num_products = 0,
-        .fee = 0.0,
+        .fee = 0,
     };
     exchange* pexchange = &exchange_data;
 
@@ -84,19 +98,14 @@ int main(int argc, char** argv) {
 
     // Event loop
     while (1) {
-        pause();
-        // check for SIGPIPE
+        // check for SIGPIPE or SIGCHLD
         if (sigpipe || sigchld) {
             sigpipe = false;
-            sigchld = true;
+            sigchld = false;
             for (int i = 0; i < pexchange->traders->size; i++) {
                 trader* current = pexchange->traders->array[i];
                 if (current->pid == siginfo.si_pid) {
                     printf("%s Trader %d disconnected\n", LOG_PREFIX, current->id);
-                    close(current->trader_pipe);
-                    close(current->exchange_pipe);
-                    unlink(current->trader_pipe_path);
-                    unlink(current->exchange_pipe_path);
                     dyn_array_delete_trader(pexchange->traders, i);
                 }
             }

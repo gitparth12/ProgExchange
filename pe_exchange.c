@@ -84,8 +84,9 @@ int main(int argc, char** argv) {
     // Event loop
     while (1) {
         // check for SIGPIPE
-        if (sigpipe) {
+        if (sigpipe || sigchld) {
             sigpipe = false;
+            sigchld = false;
             for (int i = 0; i < pexchange->traders->size; i++) {
                 trader* current = pexchange->traders->array[i];
                 if (current->pid == siginfo.si_pid) {

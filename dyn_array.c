@@ -95,6 +95,8 @@ void dyn_array_free_values(dyn_array* dyn) {
     for (int i = 0; i < dyn->size; i++) {
         free(dyn->array[i]);
     }
+    free(dyn->array);
+    free(dyn);
     return;
 }
 

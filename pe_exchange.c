@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
             for (int i = 0; i < pexchange->traders->size; i++) {
                 trader* current = pexchange->traders->array[i];
                 if (current->pid == siginfo.si_pid) {
-                    printf("%s Trader %d disconnected\n", LOG_PREFIX, i);
+                    printf("%s Trader %d disconnected\n", LOG_PREFIX, current->id);
                     close(current->trader_pipe);
                     close(current->exchange_pipe);
                     unlink(current->trader_pipe_path);
@@ -156,6 +156,7 @@ trader* initialize_trader(exchange* pexchange, int i, char** argv) {
     char* path;
     // Make a new trader
     trader* new_trader = (trader*) malloc(sizeof(trader));
+    new_trader->id = i-2;
 
     asprintf(&new_trader->binary, "%s", argv[i]);
     // exchange fifo

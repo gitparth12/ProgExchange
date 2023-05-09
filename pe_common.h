@@ -44,6 +44,7 @@ typedef struct{
     FILE* ftrader_pipe;
     char* trader_pipe_path;
     pid_t pid;
+    int id;
 } trader;
 
 typedef enum {

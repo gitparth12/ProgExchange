@@ -5,6 +5,7 @@
  */
 
 #include "pe_exchange.h"
+#include "dyn_array.h"
 
 
 volatile sig_atomic_t signo = 0;
@@ -61,6 +62,8 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
+    // initialize sigusr1 dynarray
+    sigusr1_queue = dyn_array_init();
     // register signal handler
     struct sigaction sig = {
         .sa_sigaction = &handler1,

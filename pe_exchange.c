@@ -210,7 +210,7 @@ bool validate_buysell(char* command) {
     char product_name[PROD_SIZE + 1];
     char qty_string[INT_STRING_SIZE + 1];
     char price_string[INT_STRING_SIZE + 1];
-    if (sscanf(command, "%*s %s %s %s %s", order_id_string, product_name, qty_string, price_string) != 5) {
+    if (sscanf(command, "%*s %s %s %s %s", order_id_string, product_name, qty_string, price_string) != 4) {
         printf("sscanf error\n");
         return false;
     }

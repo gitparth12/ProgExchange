@@ -51,7 +51,7 @@ typedef struct{
 typedef struct{
     int value;
     dyn_array* orders; // order structs
-} price;
+} price_entry;
 
 typedef struct{
     char* name;

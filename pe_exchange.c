@@ -158,14 +158,18 @@ void handle_products(dyn_array* product_list, FILE* fproducts, int* num_products
     fscanf(fproducts, "%d\n", num_products);
     printf("%s Trading %d products:", LOG_PREFIX, *num_products);
 
-    char prod_name[PRODUCT_NAME_SIZE + 1];
+    char temp[PRODUCT_NAME_SIZE + 1];
     for (int i = 0; i < *num_products; i++) {
-        fgets(prod_name, PRODUCT_NAME_SIZE, fproducts);
-        prod_name[strcspn(prod_name, "\n")] = 0;
-        char* product;
-        asprintf(&product, "%s", prod_name);
-        dyn_array_add(product_list, (void*) product);
-        printf(" %s", (char*)product_list->array[product_list->size-1]);
+        product* new_product = (product*) malloc(sizeof(product));
+        fgets(temp, PRODUCT_NAME_SIZE, fproducts);
+        temp[strcspn(temp, "\n")] = 0;
+        asprintf(&new_product->name, "%s", temp);
+        new_product->buy_prices = dyn_array_init();
+        new_product->sell_prices = dyn_array_init();
+        dyn_array_add(product_list, (void*) new_product);
+        // testing purposes
+        product* test = (product*) dyn_array_get(product_list, i);
+        printf(" %s", test->name);
     }
     printf("\n");
     fclose(fproducts);
@@ -218,10 +222,7 @@ void launch_trader(exchange* pexchange, trader* new_trader, int i, char** argv) 
         perror("Error during exec\n");
         free(id);
         // fclose(fproducts);
-        dyn_array_free_values(pexchange->product_list);
-        dyn_array_free(pexchange->product_list);
-        dyn_array_free_traders(pexchange->traders);
-        dyn_array_free(pexchange->traders);
+        free_memory(pexchange);
         exit(2);
     }
     else {
@@ -276,10 +277,9 @@ void free_memory(exchange* pexchange) {
     }
     dyn_array_free_values(pexchange->sigusr_pids);
     dyn_array_free(pexchange->sigusr_pids);
-    dyn_array_free_values(pexchange->product_list);
-    dyn_array_free(pexchange->product_list);
     dyn_array_free_traders(pexchange->traders);
     dyn_array_free(pexchange->traders);
+    dyn_array_free_products(pexchange->product_list);
 }
 
 /*

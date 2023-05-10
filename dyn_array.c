@@ -133,4 +133,34 @@ void dyn_array_delete_trader(dyn_array* dyn, int index) {
     return;
 }
 
+void dyn_array_free_products(dyn_array* dyn) {
+    // free products_list and everything inside
+    for (int i = 0; i < dyn->size; i++) {
+        product* prod = (product*) dyn->array[i];
+        // free buy_prices
+        for (int j = 0; j < prod->buy_prices->size; j++) {
+            price_entry* price = (price_entry*) prod->buy_prices->array[j];                        
+            for (int k = 0; k < price->orders->size; k++) {
+                free(price->orders->array[k]);
+            }
+            free(price->orders);
+            free(price);
+        }
+        free(prod->buy_prices);
+        // free sell_prices
+        for (int j = 0; j < prod->sell_prices->size; j++) {
+            price_entry* price = (price_entry*) prod->sell_prices->array[j];                        
+            for (int k = 0; k < price->orders->size; k++) {
+                free(price->orders->array[k]);
+            }
+            free(price->orders);
+            free(price);
+        }
+        free(prod->sell_prices);
+        // free product
+        free(prod); 
+    }
+    free(dyn);
+}
+
 /* End of copied code */

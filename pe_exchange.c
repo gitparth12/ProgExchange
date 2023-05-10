@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
             // scan input from that trader's pipe
             char message[BUF_SIZE];
             fscanf(source->ftrader_pipe, "%[^;]s", message);
-            if (message[strlen(message) - 1] != ';') {
+            if (message[BUF_SIZE-1] != '\0') {
                 printf("Message from trader too long\n");
                 printf("%s\n\n", message);
                 dyn_array_delete(pexchange->sigusr_pids, 0);

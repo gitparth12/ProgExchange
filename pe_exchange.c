@@ -135,6 +135,7 @@ int main(int argc, char** argv) {
             if (message[BUF_SIZE-1] != '\0') {
                 printf("Message from trader too long\n");
                 printf("%s\n\n", message);
+                free(dyn_array_get(pexchange->sigusr_pids, 0));
                 dyn_array_delete(pexchange->sigusr_pids, 0);
                 continue;
             }

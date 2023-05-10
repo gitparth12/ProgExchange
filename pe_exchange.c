@@ -126,13 +126,15 @@ int main(int argc, char** argv) {
             trader* source;
             if ((source = dyn_array_get_trader(pexchange->traders, pid)) == NULL) {
                 printf("Source of sigusr1 (trader) doesn't exist in list.\n");
+                dyn_array_delete(pexchange->sigusr_pids, 0);
                 continue;
             }
             // scan input from that trader's pipe
             char message[BUF_SIZE];
             fscanf(source->ftrader_pipe, "%[^;]s", message);
-            if (message[strlen(message)-1] != ';') {
+            if (message[strlen(message)] != ';') {
                 printf("Message from trader too long\n");
+                dyn_array_delete(pexchange->sigusr_pids, 0);
                 continue;
             }
             // process message

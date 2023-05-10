@@ -6,6 +6,7 @@
 
 #include "pe_exchange.h"
 #include "dyn_array.h"
+#include "pe_common.h"
 
 
 volatile sig_atomic_t signo = 0;
@@ -102,6 +103,10 @@ int main(int argc, char** argv) {
 
     // Event loop
     while (1) {
+        if (pexchange->traders->size == 0) {
+            teardown(pexchange);
+            break;
+        }
         // check for SIGPIPE or SIGCHLD
         if (sigpipe || sigchld) {
             sigpipe = false;
@@ -114,10 +119,26 @@ int main(int argc, char** argv) {
                 }
             }
         }
-        if (pexchange->traders->size == 0) {
-            printf("%s Trading completed\n", LOG_PREFIX);
-            printf("%s Exchange fees collected: $%d\n", LOG_PREFIX, pexchange->fee);
-            break;
+        // Main SIGUSR1 stuff
+        while(pexchange->sigusr_pids->size != 0) {
+            // get pid of sigusr1 and the corresponding trader
+            pid_t pid = *((pid_t*) dyn_array_get(pexchange->sigusr_pids, 0));
+            trader* source;
+            if ((source = dyn_array_get_trader(pexchange->traders, pid)) == NULL) {
+                printf("Source of sigusr1 (trader) doesn't exist in list.\n");
+                continue;
+            }
+            // scan input from that trader's pipe
+            char message[BUF_SIZE];
+            fscanf(source->ftrader_pipe, "%[^;]s", message);
+            if (message[strlen(message)-1] != ';') {
+                printf("Message from trader too long\n");
+                continue;
+            }
+            // process message
+            printf("FROM TRADER: %s\n", message);
+            // remove current sigusr1 from backlog
+            dyn_array_delete(pexchange->sigusr_pids, 0);
         }
     }
 
@@ -126,8 +147,6 @@ int main(int argc, char** argv) {
         printf("%ld\n", (long) *((pid_t*)sigusr_pids->array[i]));
     }
     */
-    // Free all allocated memory from dynamic arrays
-    free_memory(pexchange);
     return 0;
 }
 
@@ -283,6 +302,11 @@ void free_memory(exchange* pexchange) {
     dyn_array_free(pexchange->product_list);
 }
 
+void teardown(exchange* pexchange) {
+    printf("%s Trading completed\n", LOG_PREFIX);
+    printf("%s Exchange fees collected: $%d\n", LOG_PREFIX, pexchange->fee);
+    free_memory(pexchange);
+}
 /*
    void* my_malloc(size_t size) {
    return malloc(size);

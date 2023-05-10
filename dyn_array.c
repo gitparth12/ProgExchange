@@ -76,13 +76,14 @@ void* dyn_array_get(dyn_array *dyn, int index) {
     return dyn->array[index];
 }
 
-int dyn_array_get_index(dyn_array *dyn, void* value) {
+trader* dyn_array_get_trader(dyn_array* dyn, pid_t pid) {
     for (int i = 0; i < dyn->size; i++) {
-        if (dyn_array_get(dyn, i) == value){
-            return i;
+        trader* current = (trader*) dyn->array[i];
+        if (current->pid == pid) {
+            return current;
         }
     }
-    return -1;
+    return NULL;
 }
 
 void dyn_array_free(dyn_array *dyn) {

@@ -15,5 +15,6 @@ extern void dyn_array_free_values(dyn_array* dyn); // free malloced pointers in 
 extern void dyn_array_free_traders(dyn_array* dyn); // free everything inside traders
 extern void dyn_array_delete_trader(dyn_array* dyn, int index);
 extern void dyn_array_free_products(dyn_array* dyn);
+extern trader* dyn_array_get_trader(dyn_array* dyn, pid_t pid);
 
 #endif

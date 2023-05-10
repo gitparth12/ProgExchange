@@ -21,6 +21,7 @@
 #define FEE_PERCENTAGE 1
 #define BUF_SIZE (64)
 #define PROD_SIZE (16)
+#define INT_STRING_SIZE (6)
 
 typedef struct {
   int size;

@@ -131,22 +131,52 @@ int main(int argc, char** argv) {
                 continue;
             }
             // scan input from that trader's pipe
-            char message[BUF_SIZE];
-            if (fscanf(source->ftrader_pipe, "%[^;]s", message) != 1) {
+            char command[BUF_SIZE];
+            if (fscanf(source->ftrader_pipe, "%[^;]s", command) != 1) {
                 printf("Couldn't read from trader pipe, probably not written to.\n");
                 free(dyn_array_get(pexchange->sigusr_pids, 0));
                 dyn_array_delete(pexchange->sigusr_pids, 0);
                 continue;
             }
-            if (message[BUF_SIZE-1] != '\0') {
+            // check if message fits in max buffer size
+            if (command[BUF_SIZE-1] != '\0') {
                 printf("\nMessage from trader too long\n");
-                printf("%s\n\n", message);
+                printf("%s\n\n", command);
                 free(dyn_array_get(pexchange->sigusr_pids, 0));
                 dyn_array_delete(pexchange->sigusr_pids, 0);
                 continue;
             }
-            // process message
-            printf("FROM TRADER: %s\n", message);
+            // PROCESS MESSAGE
+            // printf("FROM TRADER: %s\n", message);
+            if ((strncmp(command, "BUY ", strlen("BUY "))) == 0) {
+                printf("%s [T%d] Parsing command: <%s>\n", LOG_PREFIX, source->id, command);
+                // store everything in variables
+                if (!validate_buysell(command)) {
+                    printf("Malformed command: %s\n", command);
+                    free(dyn_array_get(pexchange->sigusr_pids, 0));
+                    dyn_array_delete(pexchange->sigusr_pids, 0);
+                }
+                int order_id;
+                char product_name[PROD_SIZE] = {0};
+                int qty;
+                int price;
+                sscanf(command, "%*s %d %s %d %d", &order_id, product_name, &qty, &price);
+                // ACCEPT message
+                // write to pipe
+                char* message;
+                asprintf(&message, "ACCEPTED %d;", order_id);
+                write(source->exchange_pipe, message, strlen(message));
+                free(message);
+                // send signal
+                kill(source->pid, SIGUSR1);
+                // write to all other traders and send signals
+                asprintf(&message, "MARKET BUY %s %d %d;", product_name, qty, price);
+                tell_other_traders(pexchange, source->id, message);                
+                free(message);
+                // print orderbook
+            }
+
+
             // remove current sigusr1 from backlog
             free(dyn_array_get(pexchange->sigusr_pids, 0));
             dyn_array_delete(pexchange->sigusr_pids, 0);
@@ -159,6 +189,44 @@ int main(int argc, char** argv) {
     }
     */
     return 0;
+}
+
+void tell_other_traders(exchange* pexchange, int id, char* message) {
+    for (int i = 0; i < pexchange->traders->size; i++) {
+        trader* current = (trader*) dyn_array_get(pexchange->traders, i);
+        if (current->id == id)
+            continue;
+        if (write(current->exchange_pipe, message, strlen(message)) == -1) {
+            printf("trader_id: %d\nError writing message: %s\n", current->id, message);
+            perror("Something went wrong: ");
+            exit(4);
+        }
+        kill(current->pid, SIGUSR1);
+    }
+}
+
+bool validate_buysell(char* command) {
+    char order_id_string[INT_STRING_SIZE + 1];
+    char product_name[PROD_SIZE + 1];
+    char qty_string[INT_STRING_SIZE + 1];
+    char price_string[INT_STRING_SIZE + 1];
+    if (sscanf(command, "%*s %s %s %s %s", order_id_string, product_name, qty_string, price_string) != 5) {
+        return false;
+    }
+    // error checking with integer values in command
+    int order_id;
+    int qty;
+    int price;
+    if ((order_id = atoi(order_id_string)) == 0) {
+        return false;
+    }
+    if ((qty = atoi(qty_string)) == 0) {
+        return false;
+    }
+    if ((price = atoi(price_string)) == 0) {
+        return false;
+    }
+    return true;
 }
 
 void initialize_exchange(exchange* pexchange, int argc, char** argv) {
@@ -292,6 +360,7 @@ void market_open(exchange* pexchange) {
         if (write(current->exchange_pipe, message, strlen(message)) == -1) {
             printf("\nTrader id: %d\n", i);
             perror("Error writing MARKET OPEN;\n");
+            exit(3);
         }
         kill(current->pid, SIGUSR1);
     }

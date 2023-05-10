@@ -11,6 +11,8 @@ void launch_trader(exchange* pexchange, trader* new_trader, int i, char** argv);
 void market_open(exchange* pexchange);
 void free_memory(exchange* pexchange);
 void teardown(exchange* pexchange);
+bool validate_buysell(char* command);
+void tell_other_traders(exchange* pexchange, int id, char* message);
 
 #define LOG_PREFIX "[PEX]"
 #define PRODUCT_NAME_SIZE (16)

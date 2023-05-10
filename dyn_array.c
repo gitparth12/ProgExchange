@@ -100,12 +100,13 @@ void dyn_array_free_values(dyn_array* dyn) {
 
 void dyn_array_free_traders(dyn_array* dyn) {
     for (int i = 0; i < dyn->size; i++) {
+        trader* current = (trader*) dyn->array[i];
         // free trader attributes
-        free(((trader*)(dyn->array[i]))->binary);
-        free(((trader*)(dyn->array[i]))->exchange_pipe_path);
-        free(((trader*)(dyn->array[i]))->trader_pipe_path);
+        free(current->binary);
+        free(current->exchange_pipe_path);
+        free(current->trader_pipe_path);
         // free traders themselves
-        free(dyn->array[i]);
+        free(current);
     }
     return;
 }
@@ -137,30 +138,24 @@ void dyn_array_free_products(dyn_array* dyn) {
     // free products_list and everything inside
     for (int i = 0; i < dyn->size; i++) {
         product* prod = (product*) dyn->array[i];
+        // free name
+        free(prod->name);
         // free buy_prices
         for (int j = 0; j < prod->buy_prices->size; j++) {
             price_entry* price = (price_entry*) prod->buy_prices->array[j];                        
-            for (int k = 0; k < price->orders->size; k++) {
-                free(price->orders->array[k]);
-            }
-            free(price->orders->array);
-            free(price->orders);
+            dyn_array_free_values(price->orders);
+            dyn_array_free(price->orders);
             free(price);
         }
-        free(prod->buy_prices->array);
-        free(prod->buy_prices);
+        dyn_array_free(prod->buy_prices);
         // free sell_prices
         for (int j = 0; j < prod->sell_prices->size; j++) {
             price_entry* price = (price_entry*) prod->sell_prices->array[j];                        
-            for (int k = 0; k < price->orders->size; k++) {
-                free(price->orders->array[k]);
-            }
-            free(price->orders->array);
-            free(price->orders);
+            dyn_array_free_values(price->orders);
+            dyn_array_free(price->orders);
             free(price);
         }
-        free(prod->sell_prices->array);
-        free(prod->sell_prices);
+        dyn_array_free(prod->sell_prices);
         // free product
         free(prod); 
     }

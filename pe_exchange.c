@@ -280,6 +280,7 @@ void free_memory(exchange* pexchange) {
     dyn_array_free_traders(pexchange->traders);
     dyn_array_free(pexchange->traders);
     dyn_array_free_products(pexchange->product_list);
+    dyn_array_free(pexchange->product_list);
 }
 
 /*

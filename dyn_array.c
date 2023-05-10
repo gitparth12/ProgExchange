@@ -160,7 +160,6 @@ void dyn_array_free_products(dyn_array* dyn) {
         // free product
         free(prod); 
     }
-    free(dyn);
 }
 
 /* End of copied code */

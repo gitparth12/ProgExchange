@@ -48,6 +48,22 @@ typedef struct{
     int id;
 } trader;
 
+typedef struct{
+    int value;
+    dyn_array* orders; // order structs
+} price;
+
+typedef struct{
+    char* name;
+    dyn_array* buy_prices; // price structs
+    dyn_array* sell_prices; // price structs
+} product;
+
+typedef struct{
+    int order_id;
+    int qty;
+} order;
+
 typedef enum {
     ACCEPTED,
     AMENDED,

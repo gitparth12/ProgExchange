@@ -33,6 +33,7 @@ typedef struct{
     dyn_array* traders;
     int num_products;
     int fee;
+    dyn_array* sigusr_pids;
 } exchange;
 
 typedef struct{

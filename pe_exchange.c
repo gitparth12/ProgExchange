@@ -62,8 +62,6 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    // initialize sigusr1 dynarray
-    sigusr_pids = dyn_array_init();
     // register signal handler
     struct sigaction sig = {
         .sa_sigaction = &handler1,
@@ -94,6 +92,7 @@ int main(int argc, char** argv) {
         .traders = dyn_array_init(),
         .num_products = 0,
         .fee = 0,
+        .sigusr_pids = dyn_array_init(),
     };
     exchange* pexchange = &exchange_data;
 
@@ -120,11 +119,11 @@ int main(int argc, char** argv) {
         }
     }
 
+    /*
     for (int i = 0; i < sigusr_pids->size; i++) {
         printf("%ld\n", (long) *((pid_t*)sigusr_pids->array[i]));
     }
-    dyn_array_free_values(sigusr_pids);
-    dyn_array_free(sigusr_pids);
+    */
     // Free all allocated memory from dynamic arrays
     free_memory(pexchange);
     return 0;
@@ -273,6 +272,8 @@ void free_memory(exchange* pexchange) {
         close(current->exchange_pipe);
         unlink(current->exchange_pipe_path);
     }
+    dyn_array_free_values(pexchange->sigusr_pids);
+    dyn_array_free(pexchange->sigusr_pids);
     dyn_array_free_values(pexchange->product_list);
     dyn_array_free(pexchange->product_list);
     dyn_array_free_traders(pexchange->traders);

@@ -62,6 +62,8 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
+    // initialize sigusr1 dynarray
+    sigusr_pids = dyn_array_init();
     // register signal handler
     struct sigaction sig = {
         .sa_sigaction = &handler1,
@@ -92,7 +94,7 @@ int main(int argc, char** argv) {
         .traders = dyn_array_init(),
         .num_products = 0,
         .fee = 0,
-        .sigusr_pids = dyn_array_init(),
+        .sigusr_pids = sigusr_pids,
     };
     exchange* pexchange = &exchange_data;
 

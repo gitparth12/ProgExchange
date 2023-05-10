@@ -218,7 +218,7 @@ bool validate_buysell(char* command) {
     int order_id;
     int qty;
     int price;
-    if ((order_id = atoi(order_id_string)) == 0) {
+    if ((order_id = atoi(order_id_string)) == 0 && (strncmp(order_id_string, "0", strlen(order_id_string))) != 0) {
         printf("order_id error\n");
         return false;
     }

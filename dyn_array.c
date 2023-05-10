@@ -143,9 +143,11 @@ void dyn_array_free_products(dyn_array* dyn) {
             for (int k = 0; k < price->orders->size; k++) {
                 free(price->orders->array[k]);
             }
+            free(price->orders->array);
             free(price->orders);
             free(price);
         }
+        free(prod->buy_prices->array);
         free(prod->buy_prices);
         // free sell_prices
         for (int j = 0; j < prod->sell_prices->size; j++) {
@@ -153,9 +155,11 @@ void dyn_array_free_products(dyn_array* dyn) {
             for (int k = 0; k < price->orders->size; k++) {
                 free(price->orders->array[k]);
             }
+            free(price->orders->array);
             free(price->orders);
             free(price);
         }
+        free(prod->sell_prices->array);
         free(prod->sell_prices);
         // free product
         free(prod); 

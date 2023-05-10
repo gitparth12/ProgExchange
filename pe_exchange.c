@@ -126,6 +126,7 @@ int main(int argc, char** argv) {
             trader* source;
             if ((source = dyn_array_get_trader(pexchange->traders, pid)) == NULL) {
                 printf("Source of sigusr1 (trader) doesn't exist in list.\n");
+                free(dyn_array_get(pexchange->sigusr_pids, 0));
                 dyn_array_delete(pexchange->sigusr_pids, 0);
                 continue;
             }
@@ -142,6 +143,7 @@ int main(int argc, char** argv) {
             // process message
             printf("FROM TRADER: %s\n", message);
             // remove current sigusr1 from backlog
+            free(dyn_array_get(pexchange->sigusr_pids, 0));
             dyn_array_delete(pexchange->sigusr_pids, 0);
         }
     }

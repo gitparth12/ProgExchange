@@ -211,6 +211,7 @@ bool validate_buysell(char* command) {
     char qty_string[INT_STRING_SIZE + 1];
     char price_string[INT_STRING_SIZE + 1];
     if (sscanf(command, "%*s %s %s %s %s", order_id_string, product_name, qty_string, price_string) != 5) {
+        printf("sscanf error\n");
         return false;
     }
     // error checking with integer values in command
@@ -218,12 +219,15 @@ bool validate_buysell(char* command) {
     int qty;
     int price;
     if ((order_id = atoi(order_id_string)) == 0) {
+        printf("order_id error\n");
         return false;
     }
     if ((qty = atoi(qty_string)) == 0) {
+        printf("qty error\n");
         return false;
     }
     if ((price = atoi(price_string)) == 0) {
+        printf("price error\n");
         return false;
     }
     return true;

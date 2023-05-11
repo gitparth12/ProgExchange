@@ -136,7 +136,8 @@ int main(int argc, char** argv) {
             }
             // scan input from that trader's pipe
             char command[BUF_SIZE] = {0};
-            read(source->trader_pipe, command, BUF_SIZE);
+            // read(source->trader_pipe, command, BUF_SIZE);
+            read_command(source->trader_pipe, command);
             printf("%s\n", command);
             free(dyn_array_get(pexchange->sigusr_pids, 0));
             dyn_array_delete(pexchange->sigusr_pids, 0);
@@ -200,6 +201,16 @@ int main(int argc, char** argv) {
     }
     */
     return 0;
+}
+
+
+void read_command(int fd, char* buffer) {
+    char temp = 0;
+    int i = 0;
+    while (temp != ';') {
+        read(fd, &temp, 1);
+        buffer[i++] = temp;
+    }
 }
 
 void tell_other_traders(exchange* pexchange, int id, char* message) {

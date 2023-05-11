@@ -13,6 +13,7 @@ void free_memory(exchange* pexchange);
 void teardown(exchange* pexchange);
 bool validate_buysell(char* command);
 void tell_other_traders(exchange* pexchange, int id, char* message);
+void read_command(int fd, char* buffer);
 
 #define LOG_PREFIX "[PEX]"
 #define PRODUCT_NAME_SIZE (16)

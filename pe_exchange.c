@@ -120,9 +120,6 @@ int main(int argc, char** argv) {
             }
         }
         // Main SIGUSR1 stuff
-        if (pexchange->sigusr_pids->size == 0) {
-            pause();
-        }
         while(pexchange->sigusr_pids->size != 0) {
             // get pid of sigusr1 and the corresponding trader
             pid_t pid = *((pid_t*) dyn_array_get(pexchange->sigusr_pids, 0));
@@ -222,7 +219,8 @@ int read_command(int fd, char* buffer) {
             printf("Error while reading command.\nRead so far: %s\n", buffer);
             return -1;
         }
-        buffer[i++] = temp;
+        if (temp != ';')
+            buffer[i++] = temp;
     }
     return 1;
 }

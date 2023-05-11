@@ -151,16 +151,15 @@ int main(int argc, char** argv) {
             if ((strncmp(command, "BUY ", strlen("BUY "))) == 0) {
                 printf("%s [T%d] Parsing command: <%s>\n", LOG_PREFIX, source->id, command);
                 // store everything in variables
-                if (!validate_buysell(command)) {
-                    printf("Malformed command: %s\n", command);
-                    free(dyn_array_get(pexchange->sigusr_pids, 0));
-                    dyn_array_delete(pexchange->sigusr_pids, 0);
-                }
                 int order_id;
                 char product_name[PROD_SIZE] = {0};
                 int qty;
                 int price;
-                sscanf(command, "%*s %d %s %d %d", &order_id, product_name, &qty, &price);
+                if (sscanf(command, "%*s %d %s %d %d", &order_id, product_name, &qty, &price) != 4) {
+                    printf("Malformed command: %s\n", command);
+                    free(dyn_array_get(pexchange->sigusr_pids, 0));
+                    dyn_array_delete(pexchange->sigusr_pids, 0);
+                }
                 // ACCEPT message
                 // write to pipe
                 char* message;

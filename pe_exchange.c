@@ -123,6 +123,7 @@ int main(int argc, char** argv) {
         while(pexchange->sigusr_pids->size != 0) {
             // get pid of sigusr1 and the corresponding trader
             pid_t pid = *((pid_t*) dyn_array_get(pexchange->sigusr_pids, 0));
+            printf("pid: %ld\n", (long) pid);
             trader* source;
             if ((source = dyn_array_get_trader(pexchange->traders, pid)) == NULL) {
                 printf("Source of sigusr1 (trader) doesn't exist in list.\n");

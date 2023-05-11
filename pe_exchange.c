@@ -133,19 +133,19 @@ int main(int argc, char** argv) {
             }
             // scan input from that trader's pipe
             char command[BUF_SIZE] = {0};
+            /*
             printf("%d\n", fscanf(source->ftrader_pipe, "%[^;]s", command));
             free(dyn_array_get(pexchange->sigusr_pids, 0));
             dyn_array_delete(pexchange->sigusr_pids, 0);
             continue;
-            /*
-            if (fscanf(source->ftrader_pipe, "%[^;]s", command) != 1) {
+            */
+            if (fscanf(source->ftrader_pipe, "%[^;]s;", command) != 1) {
                 printf("Couldn't read from trader pipe.\n");
                 perror("fscanf error: ");
                 free(dyn_array_get(pexchange->sigusr_pids, 0));
                 dyn_array_delete(pexchange->sigusr_pids, 0);
                 continue;
             }
-            */
             // check if message fits in max buffer size
             if (command[BUF_SIZE-1] != '\0') {
                 printf("\nMessage from trader too long\n");

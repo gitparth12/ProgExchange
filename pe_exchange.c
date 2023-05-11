@@ -21,8 +21,8 @@ void handler1(int signal_num, siginfo_t* info, void* ucontext) {
     
     // Do some work that may take a while
     sigusr = true;
-    signo = signal_num;
-    siginfo = *info;
+    // signo = signal_num;
+    // siginfo = *info;
     pid_t* pid = (pid_t*) malloc(sizeof(pid_t));
     *pid = info->si_pid;
     dyn_array_add(sigusr_pids, (void*) pid);
@@ -137,12 +137,21 @@ int main(int argc, char** argv) {
             // scan input from that trader's pipe
             char command[BUF_SIZE] = {0};
             // read(source->trader_pipe, command, BUF_SIZE);
-            read_command(source->trader_pipe, command);
+            if (read_command(source->trader_pipe, command) == -1) {
+                printf("Couldn't read from trader pipe.\n");
+                perror("read error: ");
+                free(dyn_array_get(pexchange->sigusr_pids, 0));
+                dyn_array_delete(pexchange->sigusr_pids, 0);
+                continue;
+            }
+            /*
             printf("%s\n", command);
             free(dyn_array_get(pexchange->sigusr_pids, 0));
             dyn_array_delete(pexchange->sigusr_pids, 0);
             continue;
+            */
 
+            /*
             if (fscanf(source->ftrader_pipe, "%[^;]s", command) != 1) {
                 printf("Couldn't read from trader pipe.\n");
                 perror("fscanf error: ");
@@ -150,6 +159,7 @@ int main(int argc, char** argv) {
                 dyn_array_delete(pexchange->sigusr_pids, 0);
                 continue;
             }
+            */
             // check if message fits in max buffer size
             if (command[BUF_SIZE-1] != '\0') {
                 printf("\nMessage from trader too long\n");
@@ -159,7 +169,7 @@ int main(int argc, char** argv) {
                 continue;
             }
             // PROCESS MESSAGE
-            printf("FROM TRADER: %s\n", command);
+            // printf("FROM TRADER: %s\n", command);
             if ((strncmp(command, "BUY ", strlen("BUY "))) == 0) {
                 printf("%s [T%d] Parsing command: <%s>\n", LOG_PREFIX, source->id, command);
                 // store everything in variables
@@ -204,13 +214,17 @@ int main(int argc, char** argv) {
 }
 
 
-void read_command(int fd, char* buffer) {
+int read_command(int fd, char* buffer) {
     char temp = 0;
     int i = 0;
     while (temp != ';') {
-        read(fd, &temp, 1);
+        if (read(fd, &temp, 1) == -1) {
+            printf("Error while reading command.\nRead so far: %s\n", buffer);
+            return -1;
+        }
         buffer[i++] = temp;
     }
+    return 1;
 }
 
 void tell_other_traders(exchange* pexchange, int id, char* message) {

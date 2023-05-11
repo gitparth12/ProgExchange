@@ -22,6 +22,8 @@
 #define BUF_SIZE (64)
 #define PROD_SIZE (16)
 #define INT_STRING_SIZE (6)
+#define LOG_PREFIX "[PEX]"
+#define PRODUCT_NAME_SIZE (16)
 
 typedef struct {
   int size;

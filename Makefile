@@ -33,10 +33,13 @@ pe_exchange.o: pe_exchange.c
 dyn_array.o: dyn_array.c
 	$(CC) -c $(CFLAGS) $^ -o $@
 
+functions.o: functions.c
+	$(CC) -c $(CFLAGS) $^ -o $@
+
 pe_trader.o: pe_trader.c
 	$(CC) -c $(CFLAGS) $^ -o $@
 
-pe_exchange: pe_exchange.o dyn_array.o
+pe_exchange: pe_exchange.o dyn_array.o functions.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 pe_trader: pe_trader.o

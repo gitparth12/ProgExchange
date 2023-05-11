@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
                 continue;
             }
             // PROCESS MESSAGE
-            // printf("FROM TRADER: %s\n", message);
+            printf("FROM TRADER: %s\n", command);
             if ((strncmp(command, "BUY ", strlen("BUY "))) == 0) {
                 printf("%s [T%d] Parsing command: <%s>\n", LOG_PREFIX, source->id, command);
                 // store everything in variables
@@ -159,6 +159,7 @@ int main(int argc, char** argv) {
                     printf("Malformed command: %s\n", command);
                     free(dyn_array_get(pexchange->sigusr_pids, 0));
                     dyn_array_delete(pexchange->sigusr_pids, 0);
+                    continue;
                 }
                 // ACCEPT message
                 // write to pipe

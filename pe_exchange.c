@@ -132,9 +132,10 @@ int main(int argc, char** argv) {
                 continue;
             }
             // scan input from that trader's pipe
-            char command[BUF_SIZE];
+            char command[BUF_SIZE] = {0};
             if (fscanf(source->ftrader_pipe, "%[^;]s", command) != 1) {
-                printf("Couldn't read from trader pipe, probably not written to.\n");
+                printf("Couldn't read from trader pipe.\n");
+                perror("fscanf error: ");
                 free(dyn_array_get(pexchange->sigusr_pids, 0));
                 dyn_array_delete(pexchange->sigusr_pids, 0);
                 continue;

@@ -193,6 +193,7 @@ int main(int argc, char** argv) {
                 tell_other_traders(pexchange, source->id, message);                
                 free(message);
                 // print orderbook
+                print_orderbook(pexchange);
             }
 
 

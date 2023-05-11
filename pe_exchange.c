@@ -120,6 +120,9 @@ int main(int argc, char** argv) {
             }
         }
         // Main SIGUSR1 stuff
+        if (pexchange->sigusr_pids->size == 0) {
+            pause();
+        }
         while(pexchange->sigusr_pids->size != 0) {
             // get pid of sigusr1 and the corresponding trader
             pid_t pid = *((pid_t*) dyn_array_get(pexchange->sigusr_pids, 0));
@@ -133,13 +136,13 @@ int main(int argc, char** argv) {
             }
             // scan input from that trader's pipe
             char command[BUF_SIZE] = {0};
-            /*
-            printf("%d\n", fscanf(source->ftrader_pipe, "%[^;]s", command));
+            read(source->trader_pipe, command, BUF_SIZE);
+            printf("%s\n", command);
             free(dyn_array_get(pexchange->sigusr_pids, 0));
             dyn_array_delete(pexchange->sigusr_pids, 0);
             continue;
-            */
-            if (fscanf(source->ftrader_pipe, "%[^;]s;", command) != 1) {
+
+            if (fscanf(source->ftrader_pipe, "%[^;]s", command) != 1) {
                 printf("Couldn't read from trader pipe.\n");
                 perror("fscanf error: ");
                 free(dyn_array_get(pexchange->sigusr_pids, 0));

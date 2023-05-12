@@ -40,7 +40,7 @@ void print_orderbook(exchange* pexchange) {
         product* prod = (product*) dyn_array_get(pexchange->product_list, i);
         printf("%s\tProduct: %s; Buy levels: %d; Sell levels: %d\n", LOG_PREFIX, prod->name, prod->buy_prices->size, prod->sell_prices->size);
         // print sell levels
-        for (int j = 0; j < prod->sell_prices->size; j++) {
+        for (int j = prod->sell_prices->size-1; j >= 0; j--) {
             price_entry* price = (price_entry*) dyn_array_get(prod->sell_prices, j); 
             // print every price level
             int qty = 0;
@@ -48,10 +48,13 @@ void print_orderbook(exchange* pexchange) {
                 order* ord = (order*) dyn_array_get(price->orders, k);
                 qty += ord->qty;
             }
-            printf("%s\t\tSELL %d @ %d (%d orders)\n", LOG_PREFIX, qty, price->value, price->orders->size);
+            if (price->orders->size == 1)
+                printf("%s\t\tSELL %d @ %d (%d order)\n", LOG_PREFIX, qty, price->value, price->orders->size);
+            else
+                printf("%s\t\tSELL %d @ %d (%d orders)\n", LOG_PREFIX, qty, price->value, price->orders->size);
         }
         // print buy levels
-        for (int j = 0; j < prod->buy_prices->size; j++) {
+        for (int j = prod->buy_prices->size-1; j >= 0; j--) {
             price_entry* price = (price_entry*) dyn_array_get(prod->buy_prices, j); 
             // print every price level
             int qty = 0;
@@ -59,7 +62,10 @@ void print_orderbook(exchange* pexchange) {
                 order* ord = (order*) dyn_array_get(price->orders, k);
                 qty += ord->qty;
             }
-            printf("%s\t\tBUY %d @ %d (%d orders)\n", LOG_PREFIX, qty, price->value, price->orders->size);
+            if (price->orders->size == 1)
+                printf("%s\t\tBUY %d @ %d (%d order)\n", LOG_PREFIX, qty, price->value, price->orders->size);
+            else
+                printf("%s\t\tBUY %d @ %d (%d orders)\n", LOG_PREFIX, qty, price->value, price->orders->size);
         }
     }
     // print positions

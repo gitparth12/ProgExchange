@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <math.h>
 
 #define FIFO_EXCHANGE "/tmp/pe_exchange_%d"
 #define FIFO_TRADER "/tmp/pe_trader_%d"
@@ -70,6 +71,7 @@ typedef struct{
 typedef struct{
     int order_id;
     int qty;
+    trader* source;
 } order;
 
 typedef enum {

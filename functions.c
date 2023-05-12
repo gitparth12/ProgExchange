@@ -2,11 +2,168 @@
 #include "dyn_array.h"
 #include "pe_common.h"
 
-void match_order(exchange* pexchange, command command_type, order* new_order) {
+void match_order(exchange* pexchange, command command_type, char* product_name, int price, order* new_order, trader* source) {
+    product* prod = (product*) dyn_array_get_product(pexchange->product_list, product_name);
+    int prod_index;
+    for (int i = 0; i < pexchange->product_list->size; i++) {
+        product* current = (product*) dyn_array_get(pexchange->product_list, i);
+        if (strncmp(current->name, prod->name, strlen(prod->name)) == 0) {
+            prod_index = i;
+            break;
+        }
+    }
+    price_entry* prod_price;
+    price_entry* current_price;
     switch (command_type) {
         case BUY:
+            prod_price = (price_entry*) dyn_array_get_price_entry(prod->buy_prices, price);
+            // loop through sell prices to check if there's any sell_price < buy_price
+            for (int i = 0; i < prod->sell_prices->size; i++) { // prices are already sorted, so first match will be lowest price
+                current_price = (price_entry*) dyn_array_get(prod->sell_prices, i);
+                if (current_price->value <= price) {
+                    // we have a match! (current price is the sell price)
+                    // go through the orders at the current_price
+                    for (int j = 0; j < current_price->orders->size; j++) {
+                        order* current_order = (order*) dyn_array_get(current_price->orders, j);
+                        if (current_order->qty > new_order->qty) {
+                            // take qty from current order and remove new_order
+                            int value = current_price->value * new_order->qty;
+                            int fee = round(0.01 * value);
+                            // [PEX] Match: Order 3 [T0], New Order 1 [T1], value: $15060, fee: $151.
+                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
+                                    LOG_PREFIX, current_order->order_id, current_order->source->id,
+                                    new_order->order_id, new_order->source->id, value, fee);
+                            // update current_order
+                            current_order->qty -= new_order->qty;
+                            // update trader(s) values
+                            new_order->source->positions[prod_index].qty += new_order->qty; // update qty
+                            new_order->source->positions[prod_index].net_value -= value + fee; // update net_value
+                            current_order->source->positions[prod_index].qty -= new_order->qty;
+                            current_order->source->positions[prod_index].net_value += value;
+                            // adding fee to exchange
+                            pexchange->fee += fee;
+                            // remove new_order from orderbook
+                            dyn_array_delete(prod_price->orders, prod_price->orders->size - 1); // check free
+                            return;
+                        }
+                        else if (current_order->qty == new_order->qty) {
+                            // fulfill order and remove both current and new order
+                            int value = current_price->value * new_order->qty;
+                            int fee = round(0.01 * value);
+                            // [PEX] Match: Order 3 [T0], New Order 1 [T1], value: $15060, fee: $151.
+                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
+                                    LOG_PREFIX, current_order->order_id, current_order->source->id,
+                                    new_order->order_id, new_order->source->id, value, fee);
+                            // update trader(s)
+                            new_order->source->positions[prod_index].qty += new_order->qty; // update qty
+                            new_order->source->positions[prod_index].net_value -= value + fee; // update net_value
+                            current_order->source->positions[prod_index].qty -= new_order->qty;
+                            current_order->source->positions[prod_index].net_value += value;
+                            // adding fee to exchange
+                            pexchange->fee += fee;
+                            // remove both orders from orderbook
+                            dyn_array_delete(prod_price->orders, prod_price->orders->size - 1); // check free
+                            dyn_array_delete(current_price->orders, j); // check free
+                            return;
+                        }
+                        else if (current_order->qty < new_order->qty) {
+                            // take all qty from current order, remove current order and move onto next order in list
+                            int value = current_price->value * current_order->qty;
+                            int fee = round(0.01 * value);
+                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
+                                    LOG_PREFIX, current_order->order_id, current_order->source->id,
+                                    new_order->order_id, new_order->source->id, value, fee);
+                            // update new_order
+                            new_order->qty -= current_order->qty; 
+                            // update trader(s)
+                            new_order->source->positions[prod_index].qty += current_order->qty;
+                            new_order->source->positions[prod_index].net_value -= value + fee;
+                            current_order->source->positions[prod_index].qty -= current_order->qty;
+                            current_order->source->positions[prod_index].net_value += value;
+                            // adding fee to exchange
+                            pexchange->fee += fee;
+                            // remove current_order from orerbook
+                            dyn_array_delete(current_price->orders, j);
+                            // continue to next order
+                        }
+                    }
+                }
+            }
             break;
         case SELL:
+            prod_price = (price_entry*) dyn_array_get_price_entry(prod->sell_prices, price);
+            // loop through buy prices to check if there's any buy_price > sell_price
+            for (int i = prod->buy_prices->size - 1; i >= 0; i--) { // prices are sorted so loop from back to get highest price
+                current_price = (price_entry*) dyn_array_get(prod->buy_prices, i);
+                if (current_price->value >= price) {
+                    // we have a match! (current price is the sell price)
+                    // go through the orders at the current_price
+                    for (int j = 0; j < current_price->orders->size; j++) {
+                        order* current_order = (order*) dyn_array_get(current_price->orders, j);
+                        if (current_order->qty > new_order->qty) {
+                            // take all qty from new_order and remove new_order
+                            int value = current_price->value * new_order->qty;
+                            int fee = round(0.01 * value);
+                            // [PEX] Match: Order 3 [T0], New Order 1 [T1], value: $15060, fee: $151.
+                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
+                                    LOG_PREFIX, current_order->order_id, current_order->source->id,
+                                    new_order->order_id, new_order->source->id, value, fee);
+                            // update current_order
+                            current_order->qty += new_order->qty;
+                            // update trader(s) values
+                            new_order->source->positions[prod_index].qty -= new_order->qty; // update qty
+                            new_order->source->positions[prod_index].net_value += value - fee; // update net_value
+                            current_order->source->positions[prod_index].qty += new_order->qty;
+                            current_order->source->positions[prod_index].net_value -= value;
+                            // adding fee to exchange
+                            pexchange->fee += fee;
+                            // remove new_order from orderbook
+                            dyn_array_delete(prod_price->orders, prod_price->orders->size - 1); // check free
+                            return;
+                        }
+                        else if (current_order->qty == new_order->qty) {
+                            // fulfill order and remove both current and new order
+                            int value = current_price->value * new_order->qty;
+                            int fee = round(0.01 * value);
+                            // [PEX] Match: Order 3 [T0], New Order 1 [T1], value: $15060, fee: $151.
+                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
+                                    LOG_PREFIX, current_order->order_id, current_order->source->id,
+                                    new_order->order_id, new_order->source->id, value, fee);
+                            // update trader(s)
+                            new_order->source->positions[prod_index].qty -= new_order->qty; // update qty
+                            new_order->source->positions[prod_index].net_value += value - fee; // update net_value
+                            current_order->source->positions[prod_index].qty += new_order->qty;
+                            current_order->source->positions[prod_index].net_value -= value;
+                            // adding fee to exchange
+                            pexchange->fee += fee;
+                            // remove both orders from orderbook
+                            dyn_array_delete(prod_price->orders, prod_price->orders->size - 1); // check free
+                            dyn_array_delete(current_price->orders, j); // check free
+                            return;
+                        }
+                        else if (current_order->qty < new_order->qty) {
+                            // take all qty from new order, remove current order and move onto next order in list
+                            int value = current_price->value * current_order->qty;
+                            int fee = round(0.01 * value);
+                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
+                                    LOG_PREFIX, current_order->order_id, current_order->source->id,
+                                    new_order->order_id, new_order->source->id, value, fee);
+                            // update new_order
+                            new_order->qty -= current_order->qty; 
+                            // update trader(s)
+                            new_order->source->positions[prod_index].qty -= current_order->qty;
+                            new_order->source->positions[prod_index].net_value += value - fee;
+                            current_order->source->positions[prod_index].qty += current_order->qty;
+                            current_order->source->positions[prod_index].net_value -= value;
+                            // adding fee to exchange
+                            pexchange->fee += fee;
+                            // remove current_order from orerbook
+                            dyn_array_delete(current_price->orders, j);
+                            // continue to next order
+                        }
+                    }
+                }
+            }
             break;
     }
 }
@@ -18,6 +175,7 @@ order* store_product(exchange* pexchange, trader* source, command command_type, 
     order* new_order = (order*) malloc(sizeof(order));
     new_order->qty = qty;
     new_order->order_id = order_id;
+    new_order->source = source;
     // the price_entry if it exists
     price_entry* prod_price;
     switch (command_type) {

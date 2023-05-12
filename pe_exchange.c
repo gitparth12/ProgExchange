@@ -141,22 +141,7 @@ int main(int argc, char** argv) {
                 dyn_array_delete(pexchange->sigusr_pids, 0);
                 continue;
             }
-            /*
-            printf("%s\n", command);
-            free(dyn_array_get(pexchange->sigusr_pids, 0));
-            dyn_array_delete(pexchange->sigusr_pids, 0);
-            continue;
-            */
 
-            /*
-            if (fscanf(source->ftrader_pipe, "%[^;]s", command) != 1) {
-                printf("Couldn't read from trader pipe.\n");
-                perror("fscanf error: ");
-                free(dyn_array_get(pexchange->sigusr_pids, 0));
-                dyn_array_delete(pexchange->sigusr_pids, 0);
-                continue;
-            }
-            */
             // check if message fits in max buffer size
             if (command[BUF_SIZE-1] != '\0') {
                 printf("\nMessage from trader too long\n");
@@ -182,7 +167,37 @@ int main(int argc, char** argv) {
                 }
                 // ACCEPT message
                 // store to orderbook
-                store_product(pexchange, BUY, order_id, product_name, qty, price);
+                // order* new_order = store_product(pexchange, BUY, order_id, product_name, qty, price);
+                // write to pipe
+                char* message;
+                asprintf(&message, "ACCEPTED %d;", order_id);
+                write(source->exchange_pipe, message, strlen(message));
+                free(message);
+                // send signal
+                kill(source->pid, SIGUSR1);
+                // write to all other traders and send signals
+                asprintf(&message, "MARKET BUY %s %d %d;", product_name, qty, price);
+                tell_other_traders(pexchange, source->id, message);                
+                free(message);
+                // print orderbook
+                print_orderbook(pexchange);
+            }
+            else if ((strncmp(command, "SELL ", strlen("SELL"))) == 0) {
+                printf("%s [T%d] Parsing command: <%s>\n", LOG_PREFIX, source->id, command);
+                // store everything in variables
+                int order_id;
+                char product_name[PROD_SIZE] = {0};
+                int qty;
+                int price;
+                if (sscanf(command, "%*s %d %s %d %d", &order_id, product_name, &qty, &price) != 4) {
+                    printf("Malformed command: %s\n", command);
+                    free(dyn_array_get(pexchange->sigusr_pids, 0));
+                    dyn_array_delete(pexchange->sigusr_pids, 0);
+                    continue;
+                }
+                // ACCEPT message
+                // store to orderbook
+                // order* new_order = store_product(pexchange, SELL, order_id, product_name, qty, price);
                 // write to pipe
                 char* message;
                 asprintf(&message, "ACCEPTED %d;", order_id);

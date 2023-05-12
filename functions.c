@@ -3,7 +3,7 @@
 #include "pe_common.h"
 
 
-extern void store_product(exchange* pexchange, command command_type, int order_id, char* product_name, int qty, int price) {
+order* store_product(exchange* pexchange, command command_type, int order_id, char* product_name, int qty, int price) {
     // find the product the order is for
     product* prod = dyn_array_get_product(pexchange->product_list, product_name);
     // make a new order
@@ -29,8 +29,22 @@ extern void store_product(exchange* pexchange, command command_type, int order_i
             }
             break;
         case SELL:
+            prod_price = dyn_array_get_price_entry(prod->sell_prices, price);
+            if (prod_price == NULL) { // create a new price_entry
+                price_entry* new_price = (price_entry*) malloc(sizeof(price_entry));
+                new_price->value = price;
+                new_price->orders = dyn_array_init();
+                // add new_order to the new price_entry
+                dyn_array_add(new_price->orders, (void*) new_order);
+                // add the price to prices
+                dyn_array_add_price(prod->buy_prices, (void*) new_price);
+            }
+            else { // means price_entry exists
+                dyn_array_add(prod_price->orders, (void*) new_order);
+            }
             break;
     }
+    return new_order;
 }
 
 void print_orderbook(exchange* pexchange) {

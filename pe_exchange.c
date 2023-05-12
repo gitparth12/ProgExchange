@@ -201,7 +201,7 @@ int main(int argc, char** argv) {
                 // store to orderbook
                 order* new_order = store_product(pexchange, source, SELL, order_id, product_name, qty, price);
                 // Try to match order
-                match_order(pexchange, BUY, product_name, price, new_order, source);
+                match_order(pexchange, SELL, product_name, price, new_order, source);
                 // write to pipe
                 char* message;
                 asprintf(&message, "ACCEPTED %d;", order_id);

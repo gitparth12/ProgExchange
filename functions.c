@@ -63,9 +63,9 @@ void print_orderbook(exchange* pexchange) {
                 qty += ord->qty;
             }
             if (price->orders->size == 1)
-                printf("%s\t\tBUY %d @ %d (%d order)\n", LOG_PREFIX, qty, price->value, price->orders->size);
+                printf("%s\t\tBUY %d @ $%d (%d order)\n", LOG_PREFIX, qty, price->value, price->orders->size);
             else
-                printf("%s\t\tBUY %d @ %d (%d orders)\n", LOG_PREFIX, qty, price->value, price->orders->size);
+                printf("%s\t\tBUY %d @ $%d (%d orders)\n", LOG_PREFIX, qty, price->value, price->orders->size);
         }
     }
     // print positions

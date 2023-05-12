@@ -68,10 +68,8 @@ typedef struct{
 } order;
 
 typedef enum {
-    ACCEPTED,
-    AMENDED,
-    CANCELLED,
-    INVALID,
+    BUY,
+    SELL,
 } command;
 
 #endif

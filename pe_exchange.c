@@ -181,6 +181,8 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 // ACCEPT message
+                // store to orderbook
+                store_product(pexchange, BUY, order_id, product_name, qty, price);
                 // write to pipe
                 char* message;
                 asprintf(&message, "ACCEPTED %d;", order_id);
@@ -195,7 +197,6 @@ int main(int argc, char** argv) {
                 // print orderbook
                 print_orderbook(pexchange);
             }
-
 
             // remove current sigusr1 from backlog
             free(dyn_array_get(pexchange->sigusr_pids, 0));

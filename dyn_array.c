@@ -54,6 +54,30 @@ void dyn_array_add(dyn_array* dyn, void* value) {
     return;
 }
 
+void dyn_array_add_price(dyn_array* dyn, void* value) {
+    // Add a value to the end of the dynamic array.
+    if (dyn->size + 1 > dyn->capacity) {
+        // We need to resize.
+        dyn_resize(dyn);
+    }
+
+    dyn->array[dyn->size] = value;
+    dyn->size++;
+
+    // sort the whole array
+    for (int i = 0; i < dyn->size; i++) {
+        price_entry* current_price = (price_entry*) dyn->array[i];
+        int j = i-1;
+        while (j >= 0 && ((price_entry*) dyn->array[j])->value > current_price->value) {
+            // swap array[j+1] and array[j]
+            void* temp = dyn->array[j];
+            dyn->array[j] = dyn->array[j+1];
+            dyn->array[j+1] = temp;
+            j--;
+        }
+    }
+}
+
 void dyn_array_delete(dyn_array *dyn, int index) {
     // We shift everything to the right of the index left by one.
     int i = index;
@@ -80,6 +104,26 @@ trader* dyn_array_get_trader(dyn_array* dyn, pid_t pid) {
     for (int i = 0; i < dyn->size; i++) {
         trader* current = (trader*) dyn->array[i];
         if (current->pid == pid) {
+            return current;
+        }
+    }
+    return NULL;
+}
+
+product* dyn_array_get_product(dyn_array* dyn, char* name) {
+    for (int i = 0; i < dyn->size; i++) {
+        product* current = (product*) dyn->array[i];
+        if (strncmp(current->name, name, strlen(name))) {
+            return current;
+        }
+    }
+    return NULL;
+}
+
+price_entry* dyn_array_get_price_entry(dyn_array* dyn, int value) {
+    for (int i = 0; i < dyn->size; i++) {
+        price_entry* current = (price_entry*) dyn->array[i];
+        if (current->value == value) {
             return current;
         }
     }

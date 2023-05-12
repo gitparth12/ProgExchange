@@ -150,6 +150,7 @@ void dyn_array_free_traders(dyn_array* dyn) {
         free(current->binary);
         free(current->exchange_pipe_path);
         free(current->trader_pipe_path);
+        free(current->positions);
         // free traders themselves
         free(current);
     }

@@ -2,8 +2,16 @@
 #include "dyn_array.h"
 #include "pe_common.h"
 
+void match_order(exchange* pexchange, command command_type, order* new_order) {
+    switch (command_type) {
+        case BUY:
+            break;
+        case SELL:
+            break;
+    }
+}
 
-order* store_product(exchange* pexchange, command command_type, int order_id, char* product_name, int qty, int price) {
+order* store_product(exchange* pexchange, trader* source, command command_type, int order_id, char* product_name, int qty, int price) {
     // find the product the order is for
     product* prod = dyn_array_get_product(pexchange->product_list, product_name);
     // make a new order
@@ -191,6 +199,7 @@ trader* initialize_trader(exchange* pexchange, int i, char** argv) {
     // Make a new trader
     trader* new_trader = (trader*) malloc(sizeof(trader));
     new_trader->id = i-2;
+    new_trader->positions = (int*) calloc(pexchange->num_products, sizeof(int));
 
     asprintf(&new_trader->binary, "%s", argv[i]);
     // exchange fifo
@@ -247,10 +256,6 @@ void launch_trader(exchange* pexchange, trader* new_trader, int i, char** argv) 
         perror("Error opening exchange_pipe");
     }
     else {
-        if ((new_trader->fexchange_pipe = fdopen(new_trader->exchange_pipe, "w")) == NULL) {
-            printf("\nTrader id: %d\n", i);
-            perror("Error making file pointer for exchange pipe.");
-        }
         printf("%s Connected to %s\n", LOG_PREFIX, new_trader->exchange_pipe_path);
     }
     if ((new_trader->trader_pipe = open(new_trader->trader_pipe_path, O_RDONLY)) == -1) {
@@ -258,10 +263,6 @@ void launch_trader(exchange* pexchange, trader* new_trader, int i, char** argv) 
         perror("Error opening trader_pipe");
     }
     else {
-        if ((new_trader->ftrader_pipe = fdopen(new_trader->trader_pipe, "r")) == NULL) {
-            printf("\nTrader id: %d\n", i);
-            perror("Error making file pointer for trader pipe.");
-        }
         printf("%s Connected to %s\n", LOG_PREFIX, new_trader->trader_pipe_path);
     }
 }

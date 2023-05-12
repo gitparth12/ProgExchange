@@ -42,13 +42,12 @@ typedef struct{
 typedef struct{
     char* binary;
     int exchange_pipe;
-    FILE* fexchange_pipe;
     char* exchange_pipe_path;
     int trader_pipe;
-    FILE* ftrader_pipe;
     char* trader_pipe_path;
     pid_t pid;
     int id;
+    int* positions; // indices map to product_ls names
 } trader;
 
 typedef struct{

@@ -147,11 +147,10 @@ void dyn_array_free_traders(dyn_array* dyn) {
     for (int i = 0; i < dyn->size; i++) {
         trader* current = (trader*) dyn->array[i];
         // free trader attributes
-        printf("0th position: %d\n", current->positions[0]);
-        free(current->positions);
         free(current->binary);
         free(current->exchange_pipe_path);
         free(current->trader_pipe_path);
+        free(current->positions);
         // free traders themselves
         free(current);
     }
@@ -160,14 +159,16 @@ void dyn_array_free_traders(dyn_array* dyn) {
 
 void dyn_array_delete_trader(dyn_array* dyn, int index) {
     int i = index;
+    trader* current = (trader*) dyn_array_get(dyn, i);
     // free trader memory and clean up pipes
-    close(((trader*)(dyn->array[i]))->trader_pipe);
-    close(((trader*)(dyn->array[i]))->exchange_pipe);
-    unlink(((trader*)(dyn->array[i]))->trader_pipe_path);
-    unlink(((trader*)(dyn->array[i]))->exchange_pipe_path);
-    free(((trader*)(dyn->array[i]))->binary);
-    free(((trader*)(dyn->array[i]))->exchange_pipe_path);
-    free(((trader*)(dyn->array[i]))->trader_pipe_path);
+    close(current->trader_pipe);
+    close(current->exchange_pipe);
+    unlink(current->trader_pipe_path);
+    unlink(current->exchange_pipe_path);
+    free(current->binary);
+    free(current->exchange_pipe_path);
+    free(current->trader_pipe_path);
+    free(current->positions); 
     // free traders themselves
     free(dyn->array[i]);
     

@@ -199,9 +199,7 @@ trader* initialize_trader(exchange* pexchange, int i, char** argv) {
     // Make a new trader
     trader* new_trader = (trader*) malloc(sizeof(trader));
     new_trader->id = i-2;
-    printf("Num products: %d\n", pexchange->num_products);
     new_trader->positions = (int*) calloc(pexchange->num_products, sizeof(int));
-    // free(new_trader->positions);
 
     asprintf(&new_trader->binary, "%s", argv[i]);
     // exchange fifo

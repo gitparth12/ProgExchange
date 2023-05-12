@@ -37,7 +37,7 @@ order* store_product(exchange* pexchange, command command_type, int order_id, ch
                 // add new_order to the new price_entry
                 dyn_array_add(new_price->orders, (void*) new_order);
                 // add the price to prices
-                dyn_array_add_price(prod->buy_prices, (void*) new_price);
+                dyn_array_add_price(prod->sell_prices, (void*) new_price);
             }
             else { // means price_entry exists
                 dyn_array_add(prod_price->orders, (void*) new_order);

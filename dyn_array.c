@@ -12,7 +12,7 @@
 /*
  * USYD CODE CITATION ACKNOWLEDGEMENT
  * I declare that the majority of the lines of code below has been taken from
- * the Angus O'Grady's Tutorial 4 question 5 and is not my own work.
+ * Angus O'Grady's Tutorial 4 question 5 and is not my own work.
  */
 
 void dyn_resize(dyn_array *dyn) {

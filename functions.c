@@ -61,9 +61,9 @@ void print_orderbook(exchange* pexchange) {
             }
             printf("%s\t\tBUY %d @ %d (%d orders)\n", LOG_PREFIX, qty, price->value, price->orders->size);
         }
-        // print positions
-        printf("%s\t--POSITIONS--\n", LOG_PREFIX);
     }
+    // print positions
+    printf("%s\t--POSITIONS--\n", LOG_PREFIX);
 }
 
 int read_command(int fd, char* buffer) {

@@ -40,6 +40,11 @@ typedef struct{
 } exchange;
 
 typedef struct{
+    int qty;
+    int net_value;
+} position;
+
+typedef struct{
     char* binary;
     int exchange_pipe;
     char* exchange_pipe_path;
@@ -47,7 +52,8 @@ typedef struct{
     char* trader_pipe_path;
     pid_t pid;
     int id;
-    int* positions; // indices map to product_ls names
+    // array of position structs
+    position* positions; // indices map to product_ls
 } trader;
 
 typedef struct{

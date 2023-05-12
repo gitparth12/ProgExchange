@@ -92,6 +92,19 @@ void print_orderbook(exchange* pexchange) {
     }
     // print positions
     printf("%s\t--POSITIONS--\n", LOG_PREFIX);
+    for (int i = 0; i < pexchange->traders->size; i++) {
+        trader* current = (trader*) dyn_array_get(pexchange->traders, i);
+        printf("%s\tTrader %d: ", LOG_PREFIX, current->id);
+        // for every trader, go through all products and print positions
+        for (int j = 0; j < pexchange->product_list->size; j++) {
+            product* prod = (product*) dyn_array_get(pexchange->product_list, j);
+            if (j == 0)
+                printf("%s %d ($%d)", prod->name, current->positions[j].qty, current->positions[j].net_value);
+            else
+                printf(", %s %d ($%d)", prod->name, current->positions[j].qty, current->positions[j].net_value);
+        }
+        printf("\n");
+    }
 }
 
 int read_command(int fd, char* buffer) {
@@ -199,7 +212,7 @@ trader* initialize_trader(exchange* pexchange, int i, char** argv) {
     // Make a new trader
     trader* new_trader = (trader*) malloc(sizeof(trader));
     new_trader->id = i-2;
-    new_trader->positions = (int*) calloc(pexchange->num_products, sizeof(int));
+    new_trader->positions = (position*) calloc(pexchange->num_products, sizeof(position));
 
     asprintf(&new_trader->binary, "%s", argv[i]);
     // exchange fifo

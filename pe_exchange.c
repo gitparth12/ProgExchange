@@ -167,7 +167,8 @@ int main(int argc, char** argv) {
                 }
                 // ACCEPT message
                 // store to orderbook
-                // order* new_order = store_product(pexchange, BUY, order_id, product_name, qty, price);
+                // order* new_order = 
+                store_product(pexchange, BUY, order_id, product_name, qty, price);
                 // write to pipe
                 char* message;
                 asprintf(&message, "ACCEPTED %d;", order_id);
@@ -197,7 +198,8 @@ int main(int argc, char** argv) {
                 }
                 // ACCEPT message
                 // store to orderbook
-                // order* new_order = store_product(pexchange, SELL, order_id, product_name, qty, price);
+                // order* new_order = 
+                store_product(pexchange, SELL, order_id, product_name, qty, price);
                 // write to pipe
                 char* message;
                 asprintf(&message, "ACCEPTED %d;", order_id);

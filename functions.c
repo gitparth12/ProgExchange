@@ -17,6 +17,8 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
     switch (command_type) {
         case BUY:
             prod_price = (price_entry*) dyn_array_get_price_entry(prod->buy_prices, price);
+            if (prod_price == NULL)
+                printf("Something went super wrong here.\n");
             // loop through sell prices to check if there's any sell_price < buy_price
             for (int i = 0; i < prod->sell_prices->size; i++) { // prices are already sorted, so first match will be lowest price
                 current_price = (price_entry*) dyn_array_get(prod->sell_prices, i);

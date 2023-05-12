@@ -122,7 +122,7 @@ product* dyn_array_get_product(dyn_array* dyn, char* name) {
 
 price_entry* dyn_array_get_price_entry(dyn_array* dyn, int value) {
     for (int i = 0; i < dyn->size; i++) {
-        price_entry* current = (price_entry*) dyn->array[i];
+        price_entry* current = (price_entry*) dyn_array_get(dyn, i);
         if (current->value == value) {
             return current;
         }

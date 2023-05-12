@@ -115,7 +115,7 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                                     LOG_PREFIX, current_order->order_id, current_order->source->id,
                                     new_order->order_id, new_order->source->id, value, fee);
                             // update current_order
-                            current_order->qty += new_order->qty;
+                            current_order->qty -= new_order->qty;
                             // update trader(s) values
                             new_order->source->positions[prod_index].qty -= new_order->qty; // update qty
                             new_order->source->positions[prod_index].net_value += value - fee; // update net_value
@@ -166,7 +166,7 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             current_order->source->positions[prod_index].net_value -= value;
                             // adding fee to exchange
                             pexchange->fee += fee;
-                            // remove current_order from orerbook
+                            // remove current_order from orderbook
                             free(dyn_array_get(current_price->orders, j));
                             dyn_array_delete(current_price->orders, j--); // check free
                             // continue to next order

@@ -210,7 +210,7 @@ int main(int argc, char** argv) {
                 // send signal
                 kill(source->pid, SIGUSR1);
                 // write to all other traders and send signals
-                asprintf(&message, "MARKET BUY %s %d %d;", product_name, qty, price);
+                asprintf(&message, "MARKET SELL %s %d %d;", product_name, qty, price);
                 tell_other_traders(pexchange, source->id, message);                
                 free(message);
                 // print orderbook

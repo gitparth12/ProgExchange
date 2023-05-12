@@ -49,9 +49,9 @@ void print_orderbook(exchange* pexchange) {
                 qty += ord->qty;
             }
             if (price->orders->size == 1)
-                printf("%s\t\tSELL %d @ %d (%d order)\n", LOG_PREFIX, qty, price->value, price->orders->size);
+                printf("%s\t\tSELL %d @ $%d (%d order)\n", LOG_PREFIX, qty, price->value, price->orders->size);
             else
-                printf("%s\t\tSELL %d @ %d (%d orders)\n", LOG_PREFIX, qty, price->value, price->orders->size);
+                printf("%s\t\tSELL %d @ $%d (%d orders)\n", LOG_PREFIX, qty, price->value, price->orders->size);
         }
         // print buy levels
         for (int j = prod->buy_prices->size-1; j >= 0; j--) {

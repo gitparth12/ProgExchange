@@ -333,6 +333,12 @@ int main(int argc, char** argv) {
                     }
                     // Actually amend the found order
                     amend_order(pexchange, found, qty, price);
+                    asprintf(&message, "AMMENDED %d;", order_id);
+                    write(source->exchange_pipe, message, strlen(message));
+                    free(message);
+                    // send signal
+                    kill(source->pid, SIGUSR1);
+
                     break;
                 case CANCEL:
                     if (sscanf(buffer, "%*s %d", &order_id) != 1) {
@@ -348,7 +354,51 @@ int main(int argc, char** argv) {
                         dyn_array_delete(pexchange->sigusr_pids, 0);
                         continue;
                     }
+                    // Find the order to cancel
+                    found = NULL;
+                    for (int i = 0; i < source->orders->size; i++) {
+                        order* current = (order*) dyn_array_get(source->orders, i);
+                        if (current->order_id == order_id) {
+                            found = current;
+                            break;
+                        }
+                    }
+                    // check if order is found
+                    if (found == NULL) {
+                        char* message;
+                        asprintf(&message, "INVALID;");
+                        write(source->exchange_pipe, message, strlen(message));
+                        free(message);
+                        // send signal
+                        kill(source->pid, SIGUSR1);
+                        // remove current pid
+                        free(dyn_array_get(pexchange->sigusr_pids, 0));
+                        dyn_array_delete(pexchange->sigusr_pids, 0);
+                        continue;
+                    }
+                    // Actually cancel the order
+                    // Remove from both source->orders and the orderbook and then free
+                    trader* source = found->source;
+                    price_entry* entry = found->price;
+                    for (int k = 0; k < source->orders->size; k++) {
+                        order* ord = (order*) dyn_array_get(source->orders, k);
+                        if (ord->order_id == new_order->order_id) {
+                            dyn_array_delete(source->orders, k);
+                            break;
+                        }
+                    }
+                    int index = found->index;
+                    free(found);
+                    dyn_array_delete(entry->orders, index);
+
+                    message = NULL;
+                    asprintf(&message, "CANCELLED %d;", order_id);
+                    write(source->exchange_pipe, message, strlen(message));
+                    free(message);
+                    // send signal
+                    kill(source->pid, SIGUSR1);
                     break;
+
                 case INVALID:;
                     char* inv_message;
                     asprintf(&inv_message, "INVALID;");

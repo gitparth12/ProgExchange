@@ -168,8 +168,6 @@ int main(int argc, char** argv) {
                 // ACCEPT message
                 // store to orderbook
                 order* new_order = store_product(pexchange, source, BUY, order_id, product_name, qty, price);
-                // Try to match order
-                match_order(pexchange, BUY, product_name, price, new_order, source);
                 // write to pipe
                 char* message;
                 asprintf(&message, "ACCEPTED %d;", order_id);
@@ -181,6 +179,8 @@ int main(int argc, char** argv) {
                 asprintf(&message, "MARKET BUY %s %d %d;", product_name, qty, price);
                 tell_other_traders(pexchange, source->id, message);                
                 free(message);
+                // Try to match order
+                match_order(pexchange, BUY, product_name, price, new_order, source);
                 // print orderbook
                 print_report(pexchange);
             }
@@ -200,8 +200,6 @@ int main(int argc, char** argv) {
                 // ACCEPT message
                 // store to orderbook
                 order* new_order = store_product(pexchange, source, SELL, order_id, product_name, qty, price);
-                // Try to match order
-                match_order(pexchange, SELL, product_name, price, new_order, source);
                 // write to pipe
                 char* message;
                 asprintf(&message, "ACCEPTED %d;", order_id);
@@ -213,6 +211,8 @@ int main(int argc, char** argv) {
                 asprintf(&message, "MARKET SELL %s %d %d;", product_name, qty, price);
                 tell_other_traders(pexchange, source->id, message);                
                 free(message);
+                // Try to match order
+                match_order(pexchange, SELL, product_name, price, new_order, source);
                 // print report
                 print_report(pexchange);
             }

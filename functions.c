@@ -77,7 +77,7 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             kill(new_order->source->pid, SIGUSR1);
                             free(message);
                             // send to seller
-                            asprintf(&message, "FILL %d %d;", new_order->order_id, new_order->qty);
+                            asprintf(&message, "FILL %d %d;", current_order->order_id, new_order->qty);
                             write(current_order->source->exchange_pipe, message, strlen(message));
                             kill(current_order->source->pid, SIGUSR1);
                             free(message);
@@ -153,12 +153,12 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             // FILL ORDER
                             char* message;
                             // send to buyer
-                            asprintf(&message, "FILL %d %d;", current_order->order_id, current_order->qty);
+                            asprintf(&message, "FILL %d %d;", current_order->order_id, new_order->qty);
                             write(current_order->source->exchange_pipe, message, strlen(message));
                             kill(current_order->source->pid, SIGUSR1);
                             free(message);
                             // send to seller
-                            asprintf(&message, "FILL %d %d;", current_order->order_id, new_order->qty);
+                            asprintf(&message, "FILL %d %d;", new_order->order_id, new_order->qty);
                             write(new_order->source->exchange_pipe, message, strlen(message));
                             kill(new_order->source->pid, SIGUSR1);
                             free(message);

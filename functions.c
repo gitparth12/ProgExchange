@@ -386,20 +386,21 @@ void print_report(exchange* pexchange) {
 }
 
 int read_command(int fd, char* buffer) {
-    size_t msg_size = 0;
-    while (1) {
-        // dynamically allocate memory and put read character into buffer
-        buffer = (char*) realloc(buffer, msg_size + 1);
-        if (read(fd, buffer + msg_size, 1) == -1) {
-            printf("Error while reading command.\nRead so far: %s\n", buffer);
+    size_t bufferSize = 0;
+    ssize_t bytesRead;
+    do {
+        // Increase the buffer by 1 byte each iteration
+        buffer = realloc(buffer, bufferSize + 1); 
+
+        bytesRead = read(fd, buffer + bufferSize, 1);
+        if (bytesRead == -1) {
+            printf("ERROR: Could not read from trader FIFO.\n");
             return -1;
         }
-        msg_size++;
-        if (*(buffer + msg_size) == ';')
-            break;
-    }
-    buffer[strcspn(buffer, ";")] = '\0'; // replace ; with \0
-    return 1;
+        bufferSize += bytesRead;
+    } while (bytesRead > 0);
+
+    buffer[strcspn(buffer, ";")] = '\0'; // replace ; with newline
 }
 /*
 int read_command(int fd, char* buffer) {

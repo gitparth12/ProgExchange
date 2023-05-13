@@ -286,9 +286,6 @@ int main(int argc, char** argv) {
                     free(inv_message);
                     // send signal
                     kill(source->pid, SIGUSR1);
-                    // remove current pid
-                    free(dyn_array_get(pexchange->sigusr_pids, 0));
-                    dyn_array_delete(pexchange->sigusr_pids, 0);
                     break;
             }
             // remove current sigusr1 from backlog

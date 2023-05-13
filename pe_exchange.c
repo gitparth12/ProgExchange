@@ -189,6 +189,7 @@ int main(int argc, char** argv) {
                     dyn_array_delete(pexchange->sigusr_pids, 0);
                     continue;
                 }
+                printf("product_name: %s\n", product_name);
                 // ACCEPT message
                 // store to orderbook
                 order* new_order = store_product(pexchange, source, BUY, order_id, product_name, qty, price);

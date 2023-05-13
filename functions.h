@@ -13,7 +13,7 @@ extern void free_memory(exchange* pexchange);
 extern void teardown(exchange* pexchange);
 extern bool validate_buysell(char* command);
 extern void tell_other_traders(exchange* pexchange, int id, char* message);
-extern int read_command(int fd, char* buffer);
+extern int read_command(int fd, char** buffer);
 extern void print_report(exchange* pexchange);
 extern order* store_product(exchange* pexchange, trader* source, command command_type, int order_id, char* product_name, int qty, int price);
 void match_order(exchange* pexchange, command command_type, char* product_name, int price, order* new_order, trader* source);

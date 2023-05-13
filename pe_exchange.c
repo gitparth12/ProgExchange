@@ -158,7 +158,7 @@ int main(int argc, char** argv) {
             char* command = NULL;// gotta free
             // read_command(source->trader_pipe, command);
             
-            if (read_command(source->trader_pipe, command) == -1) {
+            if (read_command(source->trader_pipe, &command) == -1) {
                 printf("Couldn't read from trader pipe.\n");
                 perror("read error: ");
                 free(dyn_array_get(pexchange->sigusr_pids, 0));

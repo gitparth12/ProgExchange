@@ -385,14 +385,15 @@ void print_report(exchange* pexchange) {
     }
 }
 
-int read_command(int fd, char* buffer) {
+int read_command(int fd, char** buffer) {
     size_t bufferSize = 0;
     ssize_t bytesRead;
+    char* msg = *buffer;
     do {
         // Increase the buffer by 1 byte each iteration
-        buffer = realloc(buffer, bufferSize + 1); 
+        msg = realloc(msg, bufferSize + 1); 
 
-        bytesRead = read(fd, buffer + bufferSize, 1);
+        bytesRead = read(fd, msg + bufferSize, 1);
         if (bytesRead == -1) {
             printf("ERROR: Could not read from trader FIFO.\n");
             return -1;
@@ -400,7 +401,7 @@ int read_command(int fd, char* buffer) {
         bufferSize += bytesRead;
     } while (bytesRead > 0);
 
-    buffer[strcspn(buffer, ";")] = '\0'; // replace ; with newline
+    msg[strcspn(msg, ";")] = '\0'; // replace ; with newline
     return 1;
 }
 /*

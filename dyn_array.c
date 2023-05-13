@@ -151,7 +151,7 @@ void dyn_array_free_traders(dyn_array* dyn) {
         free(current->exchange_pipe_path);
         free(current->trader_pipe_path);
         free(current->positions);
-        free(current->orders);
+        dyn_array_free(current->orders);
         // free traders themselves
         free(current);
     }

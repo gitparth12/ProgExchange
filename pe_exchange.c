@@ -387,9 +387,8 @@ int main(int argc, char** argv) {
                             break;
                         }
                     }
-                    int index = found->index;
+                    dyn_array_delete(entry->orders, found->index);
                     free(found);
-                    dyn_array_delete(entry->orders, index);
 
                     message = NULL;
                     asprintf(&message, "CANCELLED %d;", order_id);

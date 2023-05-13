@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
             switch (command_type) {
                 case BUY:
                 case SELL:
-                    printf("%s [T%d] Parsing buffer: <%s>\n", LOG_PREFIX, source->id, buffer);
+                    printf("%s [T%d] Parsing command: <%s>\n", LOG_PREFIX, source->id, buffer);
                     // store everything in variables
                     int order_id;
                     char product_name[PROD_SIZE + 1] = {0};

@@ -385,14 +385,10 @@ void print_report(exchange* pexchange) {
     }
 }
 
-/*
 int read_command(int fd, char* buffer) {
     char temp = 0;
     int i = 0;
     bool first = true;
-    int num_spaces = 0;
-    int count = 0;
-    bool has_prod = false;
     while (temp != ';') {
         if (read(fd, &temp, 1) == -1) {
             printf("Error while reading command.\nRead so far: %s\n", buffer);
@@ -400,7 +396,7 @@ int read_command(int fd, char* buffer) {
         }
         // dynamically allocate memory and put read character into buffer
         if (first && temp != ';') {
-            buffer = (char*) malloc(sizeof(char));
+            // buffer = (char*) malloc(sizeof(char));
             buffer[i++] = temp;
         }
         else if (temp != ';') {
@@ -410,7 +406,7 @@ int read_command(int fd, char* buffer) {
     }
     return 1;
 }
-*/
+/*
 int read_command(int fd, char* buffer) {
     char temp = 0;
     int i = 0;
@@ -424,6 +420,7 @@ int read_command(int fd, char* buffer) {
     }
     return 1;
 }
+*/
 
 void tell_other_traders(exchange* pexchange, int id, char* message) {
     for (int i = 0; i < pexchange->traders->size; i++) {
@@ -571,14 +568,14 @@ void launch_trader(exchange* pexchange, trader* new_trader, int i, char** argv) 
     }
 
     // CONNECT TO PIPES
-    if ((new_trader->exchange_pipe = open(new_trader->exchange_pipe_path, O_WRONLY | O_NONBLOCK)) == -1) {
+    if ((new_trader->exchange_pipe = open(new_trader->exchange_pipe_path, O_WRONLY)) == -1) {
         printf("\nTrader id: %d\n", i);
         perror("Error opening exchange_pipe");
     }
     else {
         printf("%s Connected to %s\n", LOG_PREFIX, new_trader->exchange_pipe_path);
     }
-    if ((new_trader->trader_pipe = open(new_trader->trader_pipe_path, O_RDONLY | O_NONBLOCK)) == -1) {
+    if ((new_trader->trader_pipe = open(new_trader->trader_pipe_path, O_RDONLY)) == -1) {
         printf("\nTrader id: %d\n", i);
         perror("Error opening trader_pipe");
     }

@@ -154,16 +154,19 @@ int main(int argc, char** argv) {
                 continue;
             }
             // scan input from that trader's pipe
-            char command[BUF_SIZE] = {0};
-            // char* command; // gotta free
+            // char command[BUF_SIZE] = {0};
+            char* command = (char*) malloc(sizeof(char));// gotta free
             // read_command(source->trader_pipe, command);
+            
             if (read_command(source->trader_pipe, command) == -1) {
                 printf("Couldn't read from trader pipe.\n");
                 perror("read error: ");
                 free(dyn_array_get(pexchange->sigusr_pids, 0));
                 dyn_array_delete(pexchange->sigusr_pids, 0);
+                free(command);
                 continue;
             }
+            
 
             // check if message fits in max buffer size
             if (command[BUF_SIZE-1] != '\0') {
@@ -244,7 +247,7 @@ int main(int argc, char** argv) {
             free(dyn_array_get(pexchange->sigusr_pids, 0));
             dyn_array_delete(pexchange->sigusr_pids, 0);
             // free read command
-            // free(command);
+            free(command);
         }
     }
 

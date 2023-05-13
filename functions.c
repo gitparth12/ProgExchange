@@ -35,6 +35,16 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
                                     LOG_PREFIX, current_order->order_id, current_order->source->id,
                                     new_order->order_id, new_order->source->id, value, fee);
+                            // FILL ORDER
+                            char* message;
+                            asprintf(&message, "FILL %d %d;", current_order->order_id, new_order->qty);
+                            // send to buyer
+                            write(new_order->source->exchange_pipe, message, strlen(message));
+                            kill(new_order->source->pid, SIGUSR1);
+                            // send to seller
+                            write(current_order->source->exchange_pipe, message, strlen(message));
+                            kill(current_order->source->pid, SIGUSR1);
+                            free(message);
                             // update current_order
                             current_order->qty -= new_order->qty;
                             // update trader(s) values
@@ -57,6 +67,16 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
                                     LOG_PREFIX, current_order->order_id, current_order->source->id,
                                     new_order->order_id, new_order->source->id, value, fee);
+                            // FILL ORDER
+                            char* message;
+                            asprintf(&message, "FILL %d %d;", current_order->order_id, new_order->qty);
+                            // send to buyer
+                            write(new_order->source->exchange_pipe, message, strlen(message));
+                            kill(new_order->source->pid, SIGUSR1);
+                            // send to seller
+                            write(current_order->source->exchange_pipe, message, strlen(message));
+                            kill(current_order->source->pid, SIGUSR1);
+                            free(message);
                             // update trader(s)
                             new_order->source->positions[prod_index].qty += new_order->qty; // update qty
                             new_order->source->positions[prod_index].net_value -= value + fee; // update net_value
@@ -78,6 +98,16 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
                                     LOG_PREFIX, current_order->order_id, current_order->source->id,
                                     new_order->order_id, new_order->source->id, value, fee);
+                            // FILL ORDER
+                            char* message;
+                            asprintf(&message, "FILL %d %d;", current_order->order_id, current_order->qty);
+                            // send to buyer
+                            write(new_order->source->exchange_pipe, message, strlen(message));
+                            kill(new_order->source->pid, SIGUSR1);
+                            // send to seller
+                            write(current_order->source->exchange_pipe, message, strlen(message));
+                            kill(current_order->source->pid, SIGUSR1);
+                            free(message);
                             // update new_order
                             new_order->qty -= current_order->qty; 
                             // update trader(s)
@@ -114,6 +144,16 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
                                     LOG_PREFIX, current_order->order_id, current_order->source->id,
                                     new_order->order_id, new_order->source->id, value, fee);
+                            // FILL ORDER
+                            char* message;
+                            asprintf(&message, "FILL %d %d;", current_order->order_id, new_order->qty);
+                            // send to buyer
+                            write(current_order->source->exchange_pipe, message, strlen(message));
+                            kill(current_order->source->pid, SIGUSR1);
+                            // send to seller
+                            write(new_order->source->exchange_pipe, message, strlen(message));
+                            kill(new_order->source->pid, SIGUSR1);
+                            free(message);
                             // update current_order
                             current_order->qty -= new_order->qty;
                             // update trader(s) values
@@ -136,6 +176,16 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
                                     LOG_PREFIX, current_order->order_id, current_order->source->id,
                                     new_order->order_id, new_order->source->id, value, fee);
+                            // FILL ORDER
+                            char* message;
+                            asprintf(&message, "FILL %d %d;", current_order->order_id, new_order->qty);
+                            // send to buyer
+                            write(current_order->source->exchange_pipe, message, strlen(message));
+                            kill(current_order->source->pid, SIGUSR1);
+                            // send to seller
+                            write(new_order->source->exchange_pipe, message, strlen(message));
+                            kill(new_order->source->pid, SIGUSR1);
+                            free(message);
                             // update trader(s)
                             new_order->source->positions[prod_index].qty -= new_order->qty; // update qty
                             new_order->source->positions[prod_index].net_value += value - fee; // update net_value
@@ -157,6 +207,16 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
                                     LOG_PREFIX, current_order->order_id, current_order->source->id,
                                     new_order->order_id, new_order->source->id, value, fee);
+                            // FILL ORDER
+                            char* message;
+                            asprintf(&message, "FILL %d %d;", current_order->order_id, current_order->qty);
+                            // send to buyer
+                            write(current_order->source->exchange_pipe, message, strlen(message));
+                            kill(current_order->source->pid, SIGUSR1);
+                            // send to seller
+                            write(new_order->source->exchange_pipe, message, strlen(message));
+                            kill(new_order->source->pid, SIGUSR1);
+                            free(message);
                             // update new_order
                             new_order->qty -= current_order->qty; 
                             // update trader(s)
@@ -248,7 +308,7 @@ order* store_product(exchange* pexchange, trader* source, command command_type, 
     return new_order;
 }
 
-void print_orderbook(exchange* pexchange) {
+void print_report(exchange* pexchange) {
     clean_prices(pexchange);
     printf("%s\t--ORDERBOOK--\n", LOG_PREFIX);
     // print product information

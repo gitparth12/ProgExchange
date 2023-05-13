@@ -182,7 +182,7 @@ int main(int argc, char** argv) {
                 tell_other_traders(pexchange, source->id, message);                
                 free(message);
                 // print orderbook
-                print_orderbook(pexchange);
+                print_report(pexchange);
             }
             else if ((strncmp(command, "SELL ", strlen("SELL"))) == 0) {
                 printf("%s [T%d] Parsing command: <%s>\n", LOG_PREFIX, source->id, command);
@@ -213,8 +213,8 @@ int main(int argc, char** argv) {
                 asprintf(&message, "MARKET SELL %s %d %d;", product_name, qty, price);
                 tell_other_traders(pexchange, source->id, message);                
                 free(message);
-                // print orderbook
-                print_orderbook(pexchange);
+                // print report
+                print_report(pexchange);
             }
 
             // remove current sigusr1 from backlog

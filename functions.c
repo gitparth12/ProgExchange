@@ -402,6 +402,8 @@ int read_command(int fd, char* buffer) {
 void tell_other_traders(exchange* pexchange, int id, char* message) {
     for (int i = 0; i < pexchange->traders->size; i++) {
         trader* current = (trader*) dyn_array_get(pexchange->traders, i);
+        if (current->connected == false)
+            continue;
         if (current->id == id)
             continue;
         if (write(current->exchange_pipe, message, strlen(message)) == -1) {

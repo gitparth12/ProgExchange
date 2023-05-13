@@ -401,6 +401,7 @@ int read_command(int fd, char* buffer) {
     } while (bytesRead > 0);
 
     buffer[strcspn(buffer, ";")] = '\0'; // replace ; with newline
+    return 1;
 }
 /*
 int read_command(int fd, char* buffer) {

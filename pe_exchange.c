@@ -240,11 +240,7 @@ int main(int argc, char** argv) {
                         continue;
                     }
                     // store to orderbook
-                    order* new_order;
-                    if (command_type == BUY)
-                        new_order = store_product(pexchange, source, BUY, order_id, product_name, qty, price);
-                    else if (command_type == SELL)
-                        new_order = store_product(pexchange, source, SELL, order_id, product_name, qty, price);
+                    order* new_order = store_product(pexchange, source, command_type, order_id, product_name, qty, price);
                     // check INVALID
                     if (new_order == NULL) {
                         char* message;

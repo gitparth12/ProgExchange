@@ -113,7 +113,7 @@ trader* dyn_array_get_trader(dyn_array* dyn, pid_t pid) {
 product* dyn_array_get_product(dyn_array* dyn, char* name) {
     for (int i = 0; i < dyn->size; i++) {
         product* current = (product*) dyn->array[i];
-        if (strncmp(current->name, name, strlen(name)) == 0) {
+        if (strncmp(current->name, name, strlen(current->name)) == 0) {
             return current;
         }
     }

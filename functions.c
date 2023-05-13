@@ -178,6 +178,31 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
     }
 }
 
+void clean_prices(exchange* pexchange) { // remove price entries that have 0 orders
+    for (int i = 0; i < pexchange->product_list->size; i++) {
+        product* prod = (product*) dyn_array_get(pexchange->product_list, i);
+        for (int j = 0; j < prod->buy_prices->size; j++) {
+            price_entry* price = (price_entry*) dyn_array_get(prod->buy_prices, j);
+            if (price->orders->size == 0) {
+                // remove price entry
+                dyn_array_free(price->orders);
+                free(price);
+                dyn_array_delete(prod->buy_prices, j--);
+            }
+        }
+        
+        for (int j = 0; j < prod->sell_prices->size; j++) {
+            price_entry* price = (price_entry*) dyn_array_get(prod->sell_prices, j);
+            if (price->orders->size == 0) {
+                // remove price entry
+                dyn_array_free(price->orders);
+                free(price);
+                dyn_array_delete(prod->sell_prices, j--);
+            }
+        }
+    }
+}
+
 order* store_product(exchange* pexchange, trader* source, command command_type, int order_id, char* product_name, int qty, int price) {
     // find the product the order is for
     product* prod = dyn_array_get_product(pexchange->product_list, product_name);
@@ -224,6 +249,7 @@ order* store_product(exchange* pexchange, trader* source, command command_type, 
 }
 
 void print_orderbook(exchange* pexchange) {
+    clean_prices(pexchange);
     printf("%s\t--ORDERBOOK--\n", LOG_PREFIX);
     // print product information
     for (int i = 0; i < pexchange->product_list->size; i++) {

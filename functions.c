@@ -397,12 +397,13 @@ int read_command(int fd, char* buffer) {
         // dynamically allocate memory and put read character into buffer
         if (first && temp != ';') {
             // buffer = (char*) malloc(sizeof(char));
-            buffer[i++] = temp;
+            buffer[i] = temp;
         }
         else if (temp != ';') {
             buffer = (char*) realloc(buffer, sizeof(buffer) + 1);
-            buffer[i++] = temp;
+            buffer[i] = temp;
         }
+        i++;
     }
     return 1;
 }

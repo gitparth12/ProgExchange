@@ -96,8 +96,6 @@ int main(int argc, char** argv) {
         .num_products = 0,
         .fee = 0,
         .sigusr_pids = sigusr_pids,
-        .last_buy = -1,
-        .last_sell = -1,
     };
     exchange* pexchange = &exchange_data;
 
@@ -281,7 +279,16 @@ int main(int argc, char** argv) {
                     break;
                 case CANCEL:
                     break;
-                case INVALID:
+                case INVALID:;
+                    char* inv_message;
+                    asprintf(&inv_message, "INVALID;");
+                    write(source->exchange_pipe, inv_message, strlen(inv_message));
+                    free(inv_message);
+                    // send signal
+                    kill(source->pid, SIGUSR1);
+                    // remove current pid
+                    free(dyn_array_get(pexchange->sigusr_pids, 0));
+                    dyn_array_delete(pexchange->sigusr_pids, 0);
                     break;
             }
             // remove current sigusr1 from backlog

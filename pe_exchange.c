@@ -96,7 +96,8 @@ int main(int argc, char** argv) {
         .num_products = 0,
         .fee = 0,
         .sigusr_pids = sigusr_pids,
-        .last_order = -1,
+        .last_buy = -1,
+        .last_sell = -1,
     };
     exchange* pexchange = &exchange_data;
 
@@ -201,7 +202,7 @@ int main(int argc, char** argv) {
                 // --> invalid price, qty or order_id
                 if (price <= 0 || price > 999999 || \
                         qty <= 0 || qty > 999999 || \
-                        order_id != pexchange->last_order + 1) {
+                        order_id != pexchange->last_buy + 1) {
                     char* message;
                     asprintf(&message, "INVALID;");
                     write(source->exchange_pipe, message, strlen(message));
@@ -230,7 +231,7 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 // update order_id
-                pexchange->last_order = order_id;
+                pexchange->last_buy = order_id;
                 // write to pipe
                 char* message;
                 asprintf(&message, "ACCEPTED %d;", order_id);
@@ -278,7 +279,7 @@ int main(int argc, char** argv) {
                 // --> invalid price, qty or order_id
                 if (price <= 0 || price > 999999 || \
                         qty <= 0 || qty > 999999 || \
-                        order_id != pexchange->last_order + 1) {
+                        order_id != pexchange->last_sell + 1) {
                     char* message;
                     asprintf(&message, "INVALID;");
                     write(source->exchange_pipe, message, strlen(message));
@@ -291,7 +292,7 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 // update last_order
-                pexchange->last_order = order_id;
+                pexchange->last_sell = order_id;
                 // write to pipe
                 char* message;
                 asprintf(&message, "ACCEPTED %d;", order_id);

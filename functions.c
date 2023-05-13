@@ -88,7 +88,14 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             current_order->source->positions[prod_index].net_value += value;
                             // adding fee to exchange
                             pexchange->fee += fee;
-                            // remove new_order from orderbook and free memory
+                            // remove new_order from orderbook (and trader->orders) and free memory
+                            for (int k = 0; k < source->orders->size; k++) {
+                                order* ord = (order*) dyn_array_get(source->orders, k);
+                                if (ord->order_id == new_order->order_id) {
+                                    dyn_array_delete(source->orders, k);
+                                    break;
+                                }
+                            }
                             free(dyn_array_get(prod_price->orders, prod_price->orders->size - 1));
                             dyn_array_delete(prod_price->orders, prod_price->orders->size - 1); // check free
                             return;
@@ -121,6 +128,20 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             // adding fee to exchange
                             pexchange->fee += fee;
                             // remove both orders from orderbook
+                            for (int k = 0; k < source->orders->size; k++) {
+                                order* ord = (order*) dyn_array_get(source->orders, k);
+                                if (ord->order_id == new_order->order_id) {
+                                    dyn_array_delete(source->orders, k);
+                                    break;
+                                }
+                            }
+                            for (int k = 0; k < current_order->source->orders->size; k++) {
+                                order* ord = (order*) dyn_array_get(current_order->source->orders, k);
+                                if (ord->order_id == current_order->order_id) {
+                                    dyn_array_delete(current_order->source->orders, k);
+                                    break;
+                                }
+                            }
                             free(dyn_array_get(prod_price->orders, prod_price->orders->size - 1));
                             dyn_array_delete(prod_price->orders, prod_price->orders->size - 1); // check free
                             free(dyn_array_get(current_price->orders, j));
@@ -155,7 +176,14 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             current_order->source->positions[prod_index].net_value += value;
                             // adding fee to exchange
                             pexchange->fee += fee;
-                            // remove current_order from orerbook
+                            // remove current_order from orderbook
+                            for (int k = 0; k < current_order->source->orders->size; k++) {
+                                order* ord = (order*) dyn_array_get(current_order->source->orders, k);
+                                if (ord->order_id == current_order->order_id) {
+                                    dyn_array_delete(current_order->source->orders, k);
+                                    break;
+                                }
+                            }
                             free(dyn_array_get(current_price->orders, j));
                             dyn_array_delete(current_price->orders, j);
                             j--;
@@ -208,6 +236,13 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             // adding fee to exchange
                             pexchange->fee += fee;
                             // remove new_order from orderbook
+                            for (int k = 0; k < source->orders->size; k++) {
+                                order* ord = (order*) dyn_array_get(source->orders, k);
+                                if (ord->order_id == new_order->order_id) {
+                                    dyn_array_delete(source->orders, k);
+                                    break;
+                                }
+                            }
                             free(dyn_array_get(prod_price->orders, prod_price->orders->size - 1));
                             dyn_array_delete(prod_price->orders, prod_price->orders->size - 1); // check free
                             return;
@@ -240,6 +275,20 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             // adding fee to exchange
                             pexchange->fee += fee;
                             // remove both orders from orderbook
+                            for (int k = 0; k < source->orders->size; k++) {
+                                order* ord = (order*) dyn_array_get(source->orders, k);
+                                if (ord->order_id == new_order->order_id) {
+                                    dyn_array_delete(source->orders, k);
+                                    break;
+                                }
+                            }
+                            for (int k = 0; k < current_order->source->orders->size; k++) {
+                                order* ord = (order*) dyn_array_get(current_order->source->orders, k);
+                                if (ord->order_id == current_order->order_id) {
+                                    dyn_array_delete(current_order->source->orders, k);
+                                    break;
+                                }
+                            }
                             free(dyn_array_get(prod_price->orders, prod_price->orders->size - 1));
                             dyn_array_delete(prod_price->orders, prod_price->orders->size - 1); // check free
                             free(dyn_array_get(current_price->orders, j));
@@ -275,6 +324,13 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             // adding fee to exchange
                             pexchange->fee += fee;
                             // remove current_order from orderbook
+                            for (int k = 0; k < current_order->source->orders->size; k++) {
+                                order* ord = (order*) dyn_array_get(current_order->source->orders, k);
+                                if (ord->order_id == current_order->order_id) {
+                                    dyn_array_delete(current_order->source->orders, k);
+                                    break;
+                                }
+                            }
                             free(dyn_array_get(current_price->orders, j));
                             dyn_array_delete(current_price->orders, j); // check free
                             j--;

@@ -378,18 +378,20 @@ int main(int argc, char** argv) {
                     }
                     // Actually cancel the order
                     // Remove from both source->orders and the orderbook and then free
-                    trader* source_trader = found->source;
-                    price_entry* entry = found->price;
-                    for (int k = 0; k < source_trader->orders->size; k++) {
-                        order* ord = (order*) dyn_array_get(source_trader->orders, k);
-                        if (ord->order_id == new_order->order_id) {
-                            dyn_array_delete(source_trader->orders, k);
-                            break;
-                        }
-                    }
-                    dyn_array_delete(entry->orders, found->index);
-                    free(found);
+                    /* trader* source_trader = found->source; */
+                    /* price_entry* entry = found->price; */
+                    /* for (int k = 0; k < source_trader->orders->size; k++) { */
+                    /*     order* ord = (order*) dyn_array_get(source_trader->orders, k); */
+                    /*     if (ord->order_id == new_order->order_id) { */
+                    /*         dyn_array_delete(source_trader->orders, k); */
+                    /*         break; */
+                    /*     } */
+                    /* } */
+                    /* dyn_array_delete(entry->orders, found->index); */
+                    /* free(found); */
 
+                    // amend_order(pexchange, found, qty, price);
+                    cancel_order(pexchange, found);
                     message = NULL;
                     asprintf(&message, "CANCELLED %d;", order_id);
                     write(source->exchange_pipe, message, strlen(message));

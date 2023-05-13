@@ -2,6 +2,20 @@
 #include "dyn_array.h"
 #include "pe_common.h"
 
+void cancel_order(exchange* pexchange, order* to_cancel) {
+    trader* source_trader = to_cancel->source;
+    price_entry* entry = to_cancel->price;
+    for (int k = 0; k < to_cancel->source->orders->size; k++) {
+        order* ord = (order*) dyn_array_get(to_cancel->source->orders, k);
+        if (ord->order_id == to_cancel->order_id) {
+            dyn_array_delete(to_cancel->source->orders, k);
+            break;
+        }
+    }
+    dyn_array_delete(to_cancel->price->orders, to_cancel->index);
+    free(to_cancel);
+}
+
 void amend_order(exchange* pexchange, order* to_amend, int qty, int price) {
     dyn_array_delete(to_amend->price->orders, to_amend->index);
     to_amend->qty = qty;

@@ -2,6 +2,36 @@
 #include "dyn_array.h"
 #include "pe_common.h"
 
+void amend_order(exchange* pexchange, order* to_amend, int qty, int price) {
+    dyn_array_delete(to_amend->price->orders, to_amend->index);
+    to_amend->qty = qty;
+    price_entry* prod_price;
+    if (to_amend->order_type == BUY)
+        prod_price = dyn_array_get_price_entry(to_amend->prod->buy_prices, price);
+    else
+        prod_price = dyn_array_get_price_entry(to_amend->prod->sell_prices, price);
+
+    if (prod_price == NULL) { // create a new price_entry
+        price_entry* new_price = (price_entry*) malloc(sizeof(price_entry));
+        to_amend->price = new_price;
+        new_price->value = price;
+        new_price->orders = dyn_array_init();
+        // add new_order to the new price_entry
+        to_amend->index = new_price->orders->size;
+        dyn_array_add(new_price->orders, (void*) to_amend);
+        // add the price to prices
+        if (to_amend->order_type == BUY)
+            dyn_array_add_price(to_amend->prod->buy_prices, (void*) new_price);
+        else
+            dyn_array_add_price(to_amend->prod->sell_prices, (void*) new_price);
+    }
+    else { // means price_entry exists
+        to_amend->index = prod_price->orders->size;
+        to_amend->price = prod_price;
+        dyn_array_add(prod_price->orders, (void*) to_amend);
+    }
+}
+
 void match_order(exchange* pexchange, command command_type, char* product_name, int price, order* new_order, trader* source) {
     product* prod = (product*) dyn_array_get_product(pexchange->product_list, product_name);
     int prod_index;
@@ -300,25 +330,32 @@ order* store_product(exchange* pexchange, trader* source, command command_type, 
     new_order->qty = qty;
     new_order->order_id = order_id;
     new_order->source = source;
+    new_order->prod = prod;
+    new_order->order_type = command_type;
+    dyn_array_add(source->orders, new_order);
     // the price_entry if it exists
-    price_entry* prod_price;
+    price_entry* prod_price = NULL;
     switch (command_type) {
         case BUY:
             prod_price = dyn_array_get_price_entry(prod->buy_prices, price);
+            new_order->price = prod_price;
             if (prod_price == NULL) { // create a new price_entry
                 price_entry* new_price = (price_entry*) malloc(sizeof(price_entry));
                 new_price->value = price;
                 new_price->orders = dyn_array_init();
                 // add new_order to the new price_entry
+                new_order->index = new_price->orders->size;
                 dyn_array_add(new_price->orders, (void*) new_order);
                 // add the price to prices
                 dyn_array_add_price(prod->buy_prices, (void*) new_price);
             }
             else { // means price_entry exists
+                new_order->index = prod_price->orders->size;
                 dyn_array_add(prod_price->orders, (void*) new_order);
             }
             break;
         case SELL:
+            new_order->price = prod_price;
             prod_price = dyn_array_get_price_entry(prod->sell_prices, price);
             if (prod_price == NULL) { // create a new price_entry
                 price_entry* new_price = (price_entry*) malloc(sizeof(price_entry));
@@ -530,6 +567,7 @@ trader* initialize_trader(exchange* pexchange, int i, char** argv) {
     new_trader->positions = (position*) calloc(pexchange->num_products, sizeof(position));
     new_trader->last_buy = -1;
     new_trader->last_sell = -1;
+    new_trader->orders = dyn_array_init();
 
     asprintf(&new_trader->binary, "%s", argv[i]);
     // exchange fifo

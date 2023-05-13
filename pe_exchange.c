@@ -275,7 +275,65 @@ int main(int argc, char** argv) {
                     // print orderbook
                     print_report(pexchange);
                     break;
-                case AMEND:
+                case AMEND:;
+                    // store everything in variables
+                    /* int order_id; */
+                    /* int qty; */
+                    /* int price; */
+                    if (sscanf(buffer, "%*s %d %d %d", &order_id, &qty, &price) != 3) {
+                        // printf("Malformed buffer: %s\n", buffer);
+                        char* message;
+                        asprintf(&message, "INVALID;");
+                        write(source->exchange_pipe, message, strlen(message));
+                        free(message);
+                        // send signal
+                        kill(source->pid, SIGUSR1);
+                        // remove current pid
+                        free(dyn_array_get(pexchange->sigusr_pids, 0));
+                        dyn_array_delete(pexchange->sigusr_pids, 0);
+                        continue;
+                    }
+                    // Error checking (for INVALID cases)
+                    // --> invalid price, qty or order_id
+                    // 1. price, order_id, qty
+                    if (price <= 0 || price > 999999 || \
+                            qty <= 0 || qty > 999999) {
+                        char* message;
+                        asprintf(&message, "INVALID;");
+                        write(source->exchange_pipe, message, strlen(message));
+                        free(message);
+                        // send signal
+                        kill(source->pid, SIGUSR1);
+                        // remove current pid
+                        free(dyn_array_get(pexchange->sigusr_pids, 0));
+                        dyn_array_delete(pexchange->sigusr_pids, 0);
+                        continue;
+                    }
+                    // Find the order to amend
+                    order* found = NULL;
+                    for (int i = 0; i < source->orders->size; i++) {
+                        order* current = (order*) dyn_array_get(source->orders, i);
+                        if (current->order_id == order_id) {
+                            found = current;
+                            break;
+                        }
+                    }
+                    // check if order is found
+                    if (found == NULL) {
+                        char* message;
+                        asprintf(&message, "INVALID;");
+                        write(source->exchange_pipe, message, strlen(message));
+                        free(message);
+                        // send signal
+                        kill(source->pid, SIGUSR1);
+                        // remove current pid
+                        free(dyn_array_get(pexchange->sigusr_pids, 0));
+                        dyn_array_delete(pexchange->sigusr_pids, 0);
+                        continue;
+                    }
+                    // Actually amend the found order
+                    // amend_order(pexchange, order* to_amend, int qty, int price);
+
                     break;
                 case CANCEL:
                     break;

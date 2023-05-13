@@ -59,6 +59,7 @@ typedef struct{
     bool connected;
     int last_buy;
     int last_sell;
+    dyn_array* orders;
 } trader;
 
 typedef struct{
@@ -72,12 +73,6 @@ typedef struct{
     dyn_array* sell_prices; // price structs
 } product;
 
-typedef struct{
-    int order_id;
-    int qty;
-    trader* source;
-} order;
-
 typedef enum {
     BUY,
     SELL,
@@ -85,5 +80,16 @@ typedef enum {
     CANCEL,
     INVALID,
 } command;
+
+typedef struct{
+    int order_id;
+    int qty;
+    trader* source;
+    product* prod;
+    price_entry* price;
+    command order_type;
+    int index;
+} order;
+
 
 #endif

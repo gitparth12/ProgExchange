@@ -55,6 +55,7 @@ typedef struct{
     int id;
     // array of position structs
     position* positions; // indices map to product_ls
+    bool connected;
 } trader;
 
 typedef struct{

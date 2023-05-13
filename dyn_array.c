@@ -157,14 +157,14 @@ void dyn_array_free_traders(dyn_array* dyn) {
     return;
 }
 
-void dyn_array_delete_trader(dyn_array* dyn, int index) {
+void dyn_array_delete_traders(dyn_array* dyn, int index) {
     int i = index;
     trader* current = (trader*) dyn_array_get(dyn, i);
     // free trader memory and clean up pipes
-    close(current->trader_pipe);
-    close(current->exchange_pipe);
-    unlink(current->trader_pipe_path);
-    unlink(current->exchange_pipe_path);
+    // close(current->trader_pipe);
+    // close(current->exchange_pipe);
+    // unlink(current->trader_pipe_path);
+    // unlink(current->exchange_pipe_path);
     free(current->binary);
     free(current->exchange_pipe_path);
     free(current->trader_pipe_path);

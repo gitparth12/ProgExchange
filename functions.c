@@ -513,6 +513,7 @@ trader* initialize_trader(exchange* pexchange, int i, char** argv) {
     free(path);
 
     // Adding trader to list
+    new_trader->connected = true;
     dyn_array_add(pexchange->traders, (void*) new_trader);
     return new_trader;
 }

@@ -107,6 +107,23 @@ int main(int argc, char** argv) {
             teardown(pexchange);
             break;
         }
+        // check for SIGPIPE or SIGCHLD
+        if (sigpipe || sigchld) {
+            sigpipe = false;
+            sigchld = false;
+            for (int i = 0; i < pexchange->traders->size; i++) {
+                trader* current = (trader*) dyn_array_get(pexchange->traders, i);
+                if (current->pid == siginfo.si_pid) {
+                    printf("%s Trader %d disconnected\n", LOG_PREFIX, current->id);
+                    // dyn_array_delete_trader(pexchange->traders, i);
+                    current->connected = false;
+                    close(current->trader_pipe);
+                    close(current->exchange_pipe);
+                    unlink(current->trader_pipe_path);
+                    unlink(current->exchange_pipe_path);
+                }
+            }
+        }
         // Main SIGUSR1 stuff
         while(pexchange->sigusr_pids->size != 0) {
             // get pid of sigusr1 and the corresponding trader
@@ -115,6 +132,11 @@ int main(int argc, char** argv) {
             trader* source;
             if ((source = dyn_array_get_trader(pexchange->traders, pid)) == NULL) {
                 printf("Source of sigusr1 (trader) doesn't exist in list.\n");
+                free(dyn_array_get(pexchange->sigusr_pids, 0));
+                dyn_array_delete(pexchange->sigusr_pids, 0);
+                continue;
+            }
+            if (source->connected == false) {
                 free(dyn_array_get(pexchange->sigusr_pids, 0));
                 dyn_array_delete(pexchange->sigusr_pids, 0);
                 continue;
@@ -208,18 +230,6 @@ int main(int argc, char** argv) {
             // remove current sigusr1 from backlog
             free(dyn_array_get(pexchange->sigusr_pids, 0));
             dyn_array_delete(pexchange->sigusr_pids, 0);
-        }
-        // check for SIGPIPE or SIGCHLD
-        if (sigchld) {
-            sigpipe = false;
-            sigchld = false;
-            for (int i = 0; i < pexchange->traders->size; i++) {
-                trader* current = (trader*) dyn_array_get(pexchange->traders, i);
-                if (current->pid == siginfo.si_pid) {
-                    printf("%s Trader %d disconnected\n", LOG_PREFIX, current->id);
-                    dyn_array_delete_trader(pexchange->traders, i);
-                }
-            }
         }
     }
 

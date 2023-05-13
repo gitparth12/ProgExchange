@@ -169,6 +169,7 @@ int main(int argc, char** argv) {
             
 
             // check if message fits in max buffer size
+            /*
             if (command[BUF_SIZE-1] != '\0') {
                 printf("\nMessage from trader too long\n");
                 printf("%s\n\n", command);
@@ -176,6 +177,7 @@ int main(int argc, char** argv) {
                 dyn_array_delete(pexchange->sigusr_pids, 0);
                 continue;
             }
+            */
             // PROCESS MESSAGE
             // printf("FROM TRADER: %s\n", command);
             if ((strncmp(command, "BUY ", strlen("BUY "))) == 0) {

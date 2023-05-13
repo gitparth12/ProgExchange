@@ -92,7 +92,8 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             free(dyn_array_get(prod_price->orders, prod_price->orders->size - 1));
                             dyn_array_delete(prod_price->orders, prod_price->orders->size - 1); // check free
                             free(dyn_array_get(current_price->orders, j));
-                            dyn_array_delete(current_price->orders, j--); // check free
+                            dyn_array_delete(current_price->orders, j); // check free
+                            j--;
                             return;
                         }
                         else if (current_order->qty < new_order->qty) {
@@ -125,7 +126,8 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             pexchange->fee += fee;
                             // remove current_order from orerbook
                             free(dyn_array_get(current_price->orders, j));
-                            dyn_array_delete(current_price->orders, j--);
+                            dyn_array_delete(current_price->orders, j);
+                            j--;
                             // continue to next order
                         }
                     }
@@ -207,7 +209,8 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             free(dyn_array_get(prod_price->orders, prod_price->orders->size - 1));
                             dyn_array_delete(prod_price->orders, prod_price->orders->size - 1); // check free
                             free(dyn_array_get(current_price->orders, j));
-                            dyn_array_delete(current_price->orders, j--); // check free
+                            dyn_array_delete(current_price->orders, j); // check free
+                            j--;
                             return;
                         }
                         else if (current_order->qty < new_order->qty) {
@@ -240,7 +243,8 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             pexchange->fee += fee;
                             // remove current_order from orderbook
                             free(dyn_array_get(current_price->orders, j));
-                            dyn_array_delete(current_price->orders, j--); // check free
+                            dyn_array_delete(current_price->orders, j); // check free
+                            j--;
                             // continue to next order
                         }
                     }

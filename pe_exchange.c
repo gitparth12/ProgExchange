@@ -154,40 +154,19 @@ int main(int argc, char** argv) {
                 continue;
             }
             // scan input from that trader's pipe
-            // char command[BUF_SIZE] = {0};
-            char* command = NULL;// gotta free
+            char command[BUF_SIZE] = {0};
             // read_command(source->trader_pipe, command);
-            size_t commandSize = 0;
-            ssize_t bytesRead;
-            do {
-                // Increase the command by 1 byte each iteration
-                command = realloc(command, commandSize + 1); 
-
-                bytesRead = read(source->trader_pipe, command + commandSize, 1);
-                if (bytesRead == -1) {
-                    printf("ERROR: Could not read from trader FIFO.\n");
-                    return -1;
-                }
-                commandSize += bytesRead;
-            } while (bytesRead > 0);
-
-            command[strcspn(command, ";")] = '\0'; // replace ; with newline
-            return 1;
             
-            /*
-            if (read_command(source->trader_pipe, &command) == -1) {
+            if (read_command(source->trader_pipe, command) == -1) {
                 printf("Couldn't read from trader pipe.\n");
                 perror("read error: ");
                 free(dyn_array_get(pexchange->sigusr_pids, 0));
                 dyn_array_delete(pexchange->sigusr_pids, 0);
-                free(command);
                 continue;
             }
-            */
             
 
             // check if message fits in max command size
-            /*
             if (command[BUF_SIZE-1] != '\0') {
                 printf("\nMessage from trader too long\n");
                 printf("%s\n\n", command);
@@ -195,7 +174,6 @@ int main(int argc, char** argv) {
                 dyn_array_delete(pexchange->sigusr_pids, 0);
                 continue;
             }
-            */
             // PROCESS MESSAGE
             // printf("FROM TRADER: %s\n", command);
             if ((strncmp(command, "BUY ", strlen("BUY "))) == 0) {
@@ -266,8 +244,6 @@ int main(int argc, char** argv) {
             // remove current sigusr1 from backlog
             free(dyn_array_get(pexchange->sigusr_pids, 0));
             dyn_array_delete(pexchange->sigusr_pids, 0);
-            // free read command
-            free(command);
         }
     }
 

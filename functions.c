@@ -385,6 +385,7 @@ void print_report(exchange* pexchange) {
     }
 }
 
+/*
 int read_command(int fd, char* buffer) {
     size_t bufferSize = 0;
     ssize_t bytesRead;
@@ -403,7 +404,7 @@ int read_command(int fd, char* buffer) {
     buffer[strcspn(buffer, ";")] = '\0'; // replace ; with newline
     return 1;
 }
-/*
+*/
 int read_command(int fd, char* buffer) {
     char temp = 0;
     int i = 0;
@@ -417,7 +418,6 @@ int read_command(int fd, char* buffer) {
     }
     return 1;
 }
-*/
 
 void tell_other_traders(exchange* pexchange, int id, char* message) {
     for (int i = 0; i < pexchange->traders->size; i++) {

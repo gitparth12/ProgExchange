@@ -210,7 +210,7 @@ int main(int argc, char** argv) {
             dyn_array_delete(pexchange->sigusr_pids, 0);
         }
         // check for SIGPIPE or SIGCHLD
-        if (sigpipe || sigchld) {
+        if (sigchld) {
             sigpipe = false;
             sigchld = false;
             for (int i = 0; i < pexchange->traders->size; i++) {

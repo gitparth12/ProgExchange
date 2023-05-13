@@ -398,6 +398,7 @@ int read_command(int fd, char* buffer) {
         if (first && temp != ';') {
             // buffer = (char*) malloc(sizeof(char));
             buffer[i] = temp;
+            first = false;
         }
         else if (temp != ';') {
             buffer = (char*) realloc(buffer, sizeof(buffer) + 1);

@@ -385,6 +385,32 @@ void print_report(exchange* pexchange) {
     }
 }
 
+/*
+int read_command(int fd, char* buffer) {
+    char temp = 0;
+    int i = 0;
+    bool first = true;
+    int num_spaces = 0;
+    int count = 0;
+    bool has_prod = false;
+    while (temp != ';') {
+        if (read(fd, &temp, 1) == -1) {
+            printf("Error while reading command.\nRead so far: %s\n", buffer);
+            return -1;
+        }
+        // dynamically allocate memory and put read character into buffer
+        if (first && temp != ';') {
+            buffer = (char*) malloc(sizeof(char));
+            buffer[i++] = temp;
+        }
+        else if (temp != ';') {
+            buffer = (char*) realloc(buffer, sizeof(buffer) + 1);
+            buffer[i++] = temp;
+        }
+    }
+    return 1;
+}
+*/
 int read_command(int fd, char* buffer) {
     char temp = 0;
     int i = 0;

@@ -155,7 +155,9 @@ int main(int argc, char** argv) {
             }
             // scan input from that trader's pipe
             char command[BUF_SIZE] = {0};
-            // read(source->trader_pipe, command, BUF_SIZE);
+            // char* command; // gotta free
+            read_command(source->trader_pipe, command);
+            /*
             if (read_command(source->trader_pipe, command) == -1) {
                 printf("Couldn't read from trader pipe.\n");
                 perror("read error: ");
@@ -163,6 +165,7 @@ int main(int argc, char** argv) {
                 dyn_array_delete(pexchange->sigusr_pids, 0);
                 continue;
             }
+            */
 
             // check if message fits in max buffer size
             if (command[BUF_SIZE-1] != '\0') {
@@ -178,10 +181,10 @@ int main(int argc, char** argv) {
                 printf("%s [T%d] Parsing command: <%s>\n", LOG_PREFIX, source->id, command);
                 // store everything in variables
                 int order_id;
-                char product_name[PROD_SIZE] = {0};
+                char product_name[PROD_SIZE + 1] = {0};
                 int qty;
                 int price;
-                if (sscanf(command, "%*s %d %s %d %d", &order_id, product_name, &qty, &price) != 4) {
+                if (sscanf(command, "%*s %d %16s %d %d", &order_id, product_name, &qty, &price) != 4) {
                     printf("Malformed command: %s\n", command);
                     free(dyn_array_get(pexchange->sigusr_pids, 0));
                     dyn_array_delete(pexchange->sigusr_pids, 0);
@@ -242,6 +245,8 @@ int main(int argc, char** argv) {
             // remove current sigusr1 from backlog
             free(dyn_array_get(pexchange->sigusr_pids, 0));
             dyn_array_delete(pexchange->sigusr_pids, 0);
+            // free read command
+            // free(command);
         }
     }
 

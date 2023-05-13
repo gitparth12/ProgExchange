@@ -25,7 +25,9 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                 if (current_price->value <= price) {
                     // we have a match! (current price is the sell price)
                     // go through the orders at the current_price
-                    for (int j = 0; j < current_price->orders->size; j++) {
+                    // for (int j = 0; j < current_price->orders->size; j++) {
+                    int j = 0;
+                    while (j < current_price->orders->size) {
                         order* current_order = (order*) dyn_array_get(current_price->orders, j);
                         if (current_order->qty > new_order->qty) {
                             // take qty from current order and remove new_order
@@ -93,7 +95,6 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             dyn_array_delete(prod_price->orders, prod_price->orders->size - 1); // check free
                             free(dyn_array_get(current_price->orders, j));
                             dyn_array_delete(current_price->orders, j); // check free
-                            j--;
                             return;
                         }
                         else if (current_order->qty < new_order->qty) {
@@ -130,6 +131,7 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             j--;
                             // continue to next order
                         }
+                        j++;
                     }
                 }
             }
@@ -142,7 +144,9 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                 if (current_price->value >= price) {
                     // we have a match! (current price is the sell price)
                     // go through the orders at the current_price
-                    for (int j = 0; j < current_price->orders->size; j++) {
+                    // for (int j = 0; j < current_price->orders->size; j++) {
+                    int j = 0;
+                    while (j < current_price->orders->size) {
                         order* current_order = (order*) dyn_array_get(current_price->orders, j);
                         if (current_order->qty > new_order->qty) {
                             // take all qty from new_order and remove new_order
@@ -210,7 +214,6 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             dyn_array_delete(prod_price->orders, prod_price->orders->size - 1); // check free
                             free(dyn_array_get(current_price->orders, j));
                             dyn_array_delete(current_price->orders, j); // check free
-                            j--;
                             return;
                         }
                         else if (current_order->qty < new_order->qty) {
@@ -247,6 +250,7 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                             j--;
                             // continue to next order
                         }
+                        j++;
                     }
                 }
             }

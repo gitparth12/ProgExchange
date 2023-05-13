@@ -103,10 +103,22 @@ int main(int argc, char** argv) {
 
     // Event loop
     while (1) {
+        int connected_traders = 0;
+        for (int i = 0; i < pexchange->traders->size; i++) {
+            trader* current = (trader*) dyn_array_get(pexchange->traders, i);
+            if (current->connected)
+                connected_traders++;
+        }
+        if (connected_traders == 0) {
+            teardown(pexchange);
+            break;
+        }
+        /*
         if (pexchange->traders->size == 0) {
             teardown(pexchange);
             break;
         }
+        */
         // check for SIGPIPE or SIGCHLD
         if (sigpipe || sigchld) {
             sigpipe = false;

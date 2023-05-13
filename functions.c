@@ -10,7 +10,7 @@ void cancel_order(exchange* pexchange, order* to_cancel) {
             break;
         }
     }
-    printf("%d %d\n", to_cancel->source->orders->size, to_cancel->index);
+    printf("%d %d\n", to_cancel->qty, to_cancel->price->value);
     dyn_array_delete(to_cancel->price->orders, to_cancel->index);
     free(to_cancel);
 }

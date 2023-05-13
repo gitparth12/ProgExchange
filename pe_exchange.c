@@ -176,16 +176,16 @@ int main(int argc, char** argv) {
             }
             // PROCESS MESSAGE
             command command_type;
-            if ((strncmp(buffer, "BUY ", strlen("BUY "))) == 0) {
+            if ((strncmp(buffer, "BUY", strlen("BUY"))) == 0) {
                 command_type = BUY;
             }
-            else if ((strncmp(buffer, "SELL ", strlen("SELL "))) == 0) {
+            else if ((strncmp(buffer, "SELL", strlen("SELL"))) == 0) {
                 command_type = SELL;
             }
-            else if ((strncmp(buffer, "AMEND ", strlen("AMEND "))) == 0) {
+            else if ((strncmp(buffer, "AMEND", strlen("AMEND"))) == 0) {
                 command_type = AMEND;
             }
-            else if ((strncmp(buffer, "CANCEL ", strlen("CANCEL "))) == 0) {
+            else if ((strncmp(buffer, "CANCEL", strlen("CANCEL"))) == 0) {
                 command_type = CANCEL;
             }
             else {
@@ -378,12 +378,12 @@ int main(int argc, char** argv) {
                     }
                     // Actually cancel the order
                     // Remove from both source->orders and the orderbook and then free
-                    trader* source = found->source;
+                    trader* source_trader = found->source;
                     price_entry* entry = found->price;
-                    for (int k = 0; k < source->orders->size; k++) {
-                        order* ord = (order*) dyn_array_get(source->orders, k);
+                    for (int k = 0; k < source_trader->orders->size; k++) {
+                        order* ord = (order*) dyn_array_get(source_trader->orders, k);
                         if (ord->order_id == new_order->order_id) {
-                            dyn_array_delete(source->orders, k);
+                            dyn_array_delete(source_trader->orders, k);
                             break;
                         }
                     }

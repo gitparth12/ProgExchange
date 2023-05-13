@@ -221,9 +221,9 @@ int main(int argc, char** argv) {
                     // --> invalid price, qty or order_id
                     int last_order;
                     if (command_type == BUY)
-                        last_order = pexchange->last_buy;
+                        last_order = source->last_buy;
                     else if (command_type == SELL)
-                        last_order = pexchange->last_sell;
+                        last_order = source->last_sell;
 
                     if (price <= 0 || price > 999999 || \
                             qty <= 0 || qty > 999999 || \
@@ -255,9 +255,9 @@ int main(int argc, char** argv) {
                     }
                     // update order_id
                     if (command_type == BUY)
-                        pexchange->last_buy = order_id;
+                        source->last_buy = order_id;
                     else if (command_type == SELL)
-                        pexchange->last_sell = order_id;
+                        source->last_sell = order_id;
                     // write to pipe
                     char* message;
                     asprintf(&message, "ACCEPTED %d;", order_id);

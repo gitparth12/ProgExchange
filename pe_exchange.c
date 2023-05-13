@@ -219,9 +219,15 @@ int main(int argc, char** argv) {
                     }
                     // Error checking (for INVALID cases)
                     // --> invalid price, qty or order_id
+                    int last_order;
+                    if (command_type == BUY)
+                        last_order = pexchange->last_buy;
+                    else if (command_type == SELL)
+                        last_order = pexchange->last_sell;
+
                     if (price <= 0 || price > 999999 || \
                             qty <= 0 || qty > 999999 || \
-                            order_id != pexchange->last_buy + 1) {
+                            order_id != last_order + 1) {
                         char* message;
                         asprintf(&message, "INVALID;");
                         write(source->exchange_pipe, message, strlen(message));

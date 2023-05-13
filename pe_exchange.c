@@ -332,10 +332,22 @@ int main(int argc, char** argv) {
                         continue;
                     }
                     // Actually amend the found order
-                    // amend_order(pexchange, order* to_amend, int qty, int price);
-
+                    amend_order(pexchange, found, qty, price);
                     break;
                 case CANCEL:
+                    if (sscanf(buffer, "%*s %d", &order_id) != 1) {
+                        // printf("Malformed buffer: %s\n", buffer);
+                        char* message;
+                        asprintf(&message, "INVALID;");
+                        write(source->exchange_pipe, message, strlen(message));
+                        free(message);
+                        // send signal
+                        kill(source->pid, SIGUSR1);
+                        // remove current pid
+                        free(dyn_array_get(pexchange->sigusr_pids, 0));
+                        dyn_array_delete(pexchange->sigusr_pids, 0);
+                        continue;
+                    }
                     break;
                 case INVALID:;
                     char* inv_message;

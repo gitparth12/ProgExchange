@@ -39,6 +39,7 @@ typedef struct{
     int num_products;
     int fee;
     dyn_array* sigusr_pids;
+    int last_order;
 } exchange;
 
 typedef struct{

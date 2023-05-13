@@ -286,6 +286,9 @@ void clean_prices(exchange* pexchange) { // remove price entries that have 0 ord
 order* store_product(exchange* pexchange, trader* source, command command_type, int order_id, char* product_name, int qty, int price) {
     // find the product the order is for
     product* prod = dyn_array_get_product(pexchange->product_list, product_name);
+    if (prod == NULL) {
+        return NULL;
+    }
     // make a new order
     order* new_order = (order*) malloc(sizeof(order));
     new_order->qty = qty;

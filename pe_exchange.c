@@ -184,15 +184,52 @@ int main(int argc, char** argv) {
                 int qty;
                 int price;
                 if (sscanf(command, "%*s %d %16s %d %d", &order_id, product_name, &qty, &price) != 4) {
-                    printf("Malformed command: %s\n", command);
+                    // printf("Malformed command: %s\n", command);
+                    char* message;
+                    asprintf(&message, "INVALID;");
+                    write(source->exchange_pipe, message, strlen(message));
+                    free(message);
+                    // send signal
+                    kill(source->pid, SIGUSR1);
+                    // remove current pid
                     free(dyn_array_get(pexchange->sigusr_pids, 0));
                     dyn_array_delete(pexchange->sigusr_pids, 0);
                     continue;
                 }
-                printf("product_name: %s\n", product_name);
+                // Error checking (for INVALID cases)
+                // --> invalid price, qty or order_id
+                if (price <= 0 || price > 999999 || \
+                        qty <= 0 || qty > 999999 || \
+                        order_id != pexchange->last_order + 1) {
+                    char* message;
+                    asprintf(&message, "INVALID;");
+                    write(source->exchange_pipe, message, strlen(message));
+                    free(message);
+                    // send signal
+                    kill(source->pid, SIGUSR1);
+                    // remove current pid
+                    free(dyn_array_get(pexchange->sigusr_pids, 0));
+                    dyn_array_delete(pexchange->sigusr_pids, 0);
+                    continue;
+                }
+
                 // ACCEPT message
                 // store to orderbook
                 order* new_order = store_product(pexchange, source, BUY, order_id, product_name, qty, price);
+                // check INVALID
+                if (new_order == NULL) {
+                    char* message;
+                    asprintf(&message, "INVALID;");
+                    write(source->exchange_pipe, message, strlen(message));
+                    free(message);
+                    // send signal
+                    kill(source->pid, SIGUSR1);
+                    free(dyn_array_get(pexchange->sigusr_pids, 0));
+                    dyn_array_delete(pexchange->sigusr_pids, 0);
+                    continue;
+                }
+                // update order_id
+                pexchange->last_order = order_id;
                 // write to pipe
                 char* message;
                 asprintf(&message, "ACCEPTED %d;", order_id);
@@ -225,6 +262,35 @@ int main(int argc, char** argv) {
                 // ACCEPT message
                 // store to orderbook
                 order* new_order = store_product(pexchange, source, SELL, order_id, product_name, qty, price);
+                if (new_order == NULL) {
+                    char* message;
+                    asprintf(&message, "INVALID;");
+                    write(source->exchange_pipe, message, strlen(message));
+                    free(message);
+                    // send signal
+                    kill(source->pid, SIGUSR1);
+                    free(dyn_array_get(pexchange->sigusr_pids, 0));
+                    dyn_array_delete(pexchange->sigusr_pids, 0);
+                    continue;
+                }
+                // Error checking (for INVALID cases)
+                // --> invalid price, qty or order_id
+                if (price <= 0 || price > 999999 || \
+                        qty <= 0 || qty > 999999 || \
+                        order_id != pexchange->last_order + 1) {
+                    char* message;
+                    asprintf(&message, "INVALID;");
+                    write(source->exchange_pipe, message, strlen(message));
+                    free(message);
+                    // send signal
+                    kill(source->pid, SIGUSR1);
+                    // remove current pid
+                    free(dyn_array_get(pexchange->sigusr_pids, 0));
+                    dyn_array_delete(pexchange->sigusr_pids, 0);
+                    continue;
+                }
+                // update last_order
+                pexchange->last_order = order_id;
                 // write to pipe
                 char* message;
                 asprintf(&message, "ACCEPTED %d;", order_id);

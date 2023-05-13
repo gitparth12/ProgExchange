@@ -386,26 +386,19 @@ void print_report(exchange* pexchange) {
 }
 
 int read_command(int fd, char* buffer) {
-    char temp = 0;
-    int i = 0;
-    bool first = true;
-    while (temp != ';') {
-        if (read(fd, &temp, 1) == -1) {
+    size_t msg_size = 0;
+    while (1) {
+        // dynamically allocate memory and put read character into buffer
+        buffer = (char*) realloc(buffer, msg_size + 1);
+        if (read(fd, buffer + msg_size, 1) == -1) {
             printf("Error while reading command.\nRead so far: %s\n", buffer);
             return -1;
         }
-        // dynamically allocate memory and put read character into buffer
-        if (first && temp != ';') {
-            // buffer = (char*) malloc(sizeof(char));
-            buffer[i] = temp;
-            first = false;
-        }
-        else if (temp != ';') {
-            buffer = (char*) realloc(buffer, sizeof(buffer) + 1);
-            buffer[i] = temp;
-        }
-        i++;
+        msg_size++;
+        if (*(buffer + msg_size) == ';')
+            break;
     }
+    buffer[strcspn(buffer, ";")] = '\0'; // replace ; with \0
     return 1;
 }
 /*

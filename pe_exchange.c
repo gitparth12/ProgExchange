@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
             }
             // scan input from that trader's pipe
             // char command[BUF_SIZE] = {0};
-            char* command = (char*) malloc(sizeof(char));// gotta free
+            char* command = NULL;// gotta free
             // read_command(source->trader_pipe, command);
             
             if (read_command(source->trader_pipe, command) == -1) {

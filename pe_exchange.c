@@ -96,6 +96,7 @@ int main(int argc, char** argv) {
         .num_products = 0,
         .fee = 0,
         .sigusr_pids = sigusr_pids,
+        .last_order = -1,
     };
     exchange* pexchange = &exchange_data;
 

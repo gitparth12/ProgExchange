@@ -477,6 +477,7 @@ void print_report(exchange* pexchange) {
         }
     }
     // print positions
+    printf("Positions?\n");
     printf("%s\t--POSITIONS--\n", LOG_PREFIX);
     for (int i = 0; i < pexchange->traders->size; i++) {
         trader* current = (trader*) dyn_array_get(pexchange->traders, i);

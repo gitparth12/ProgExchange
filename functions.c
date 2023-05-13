@@ -255,6 +255,12 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                 }
             }
             break;
+        case AMEND:
+            break;
+        case CANCEL:
+            break;
+        case INVALID:
+            break;
     }
 }
 
@@ -326,6 +332,12 @@ order* store_product(exchange* pexchange, trader* source, command command_type, 
             else { // means price_entry exists
                 dyn_array_add(prod_price->orders, (void*) new_order);
             }
+            break;
+        case AMEND:
+            break;
+        case CANCEL:
+            break;
+        case INVALID:
             break;
     }
     return new_order;

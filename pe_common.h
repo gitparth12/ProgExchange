@@ -81,6 +81,9 @@ typedef struct{
 typedef enum {
     BUY,
     SELL,
+    AMEND,
+    CANCEL,
+    INVALID,
 } command;
 
 #endif

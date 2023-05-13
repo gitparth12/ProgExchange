@@ -424,8 +424,8 @@ order* store_product(exchange* pexchange, trader* source, command command_type, 
             }
             break;
         case SELL:
-            new_order->price = prod_price;
             prod_price = dyn_array_get_price_entry(prod->sell_prices, price);
+            new_order->price = prod_price;
             if (prod_price == NULL) { // create a new price_entry
                 price_entry* new_price = (price_entry*) malloc(sizeof(price_entry));
                 new_price->value = price;

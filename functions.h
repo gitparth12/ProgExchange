@@ -19,5 +19,6 @@ extern order* store_product(exchange* pexchange, trader* source, command command
 void match_order(exchange* pexchange, command command_type, char* product_name, long price, order* new_order, trader* source);
 void amend_order(exchange* pexchange, order* to_amend, long qty, long price);
 void cancel_order(exchange* pexchange, order* found);
+int read_command(int fd, char* buffer);
 
 #endif

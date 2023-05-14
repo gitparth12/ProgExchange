@@ -165,7 +165,7 @@ int main(int argc, char** argv) {
             char* buffer = NULL;
             // read_command(source->trader_pipe, buffer);
             int spaces;
-            if ((spaces = read_command(source->trader_pipe, buffer)) == -1) {
+            if ((spaces = read_dynamic(source->trader_pipe, buffer)) == -1) {
                 printf("Couldn't read from trader pipe.\n");
                 perror("read error: ");
                 free(dyn_array_get(pexchange->sigusr_pids, 0));

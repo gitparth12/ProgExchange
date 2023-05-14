@@ -545,6 +545,7 @@ char* read_dynamic(int fd, int* spaces) {
 int read_command(int fd, char* buffer) {
     char temp = 0;
     int i = 0;
+    int spaces = 0;
     while (temp != ';') {
         if (read(fd, &temp, 1) == -1) {
             printf("Error while reading command.\nRead so far: %s\n", buffer);
@@ -552,8 +553,10 @@ int read_command(int fd, char* buffer) {
         }
         if (temp != ';')
             buffer[i++] = temp;
+        if (temp == ' ')
+            spaces++;
     }
-    return 1;
+    return spaces;
 }
 
 void tell_other_traders(exchange* pexchange, int id, char* message) {

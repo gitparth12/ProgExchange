@@ -627,7 +627,7 @@ void handle_products(dyn_array* product_list, FILE* fproducts, int* num_products
         product* new_product = (product*) malloc(sizeof(product));
         fgets(temp, PRODUCT_NAME_SIZE, fproducts);
         temp[strcspn(temp, "\n")] = 0;
-        asprintf(&new_product->name, "%s", temp);
+        asprintf(&new_product->name, "%16s", temp);
         new_product->buy_prices = dyn_array_init();
         new_product->sell_prices = dyn_array_init();
         dyn_array_add(product_list, (void*) new_product);

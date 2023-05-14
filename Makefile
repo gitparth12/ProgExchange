@@ -42,5 +42,5 @@ pe_trader.o: pe_trader.c
 pe_exchange: pe_exchange.o dyn_array.o functions.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-pe_trader: pe_trader.o
+pe_trader: pe_trader.o dyn_array.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@

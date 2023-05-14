@@ -1,10 +1,23 @@
 #include "pe_trader.h"
 #include "pe_common.h"
-#include <unistd.h>
+#include "dyn_array.h"
 
-volatile sig_atomic_t signal_number = 0;
-void sigint_handler(int signo) {
-    signal_number = signo;
+/* volatile sig_atomic_t signal_number = 0; */
+dyn_array* sigusr_pids;
+bool sigusr = false;
+void sigint_handler(int signo, siginfo_t* info, void* ucontext) {
+    sigset_t mask;
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGUSR1);
+    sigprocmask(SIG_BLOCK, &mask, NULL);
+
+    /* signal_number = signo; */
+    sigusr = true;
+    pid_t* pid = (pid_t*) malloc(sizeof(pid_t));
+    *pid = info->si_pid;
+    dyn_array_add(sigusr_pids, (void*) pid);
+
+    sigprocmask(SIG_UNBLOCK, &mask, NULL);
 }
 
 int main(int argc, char **argv) {
@@ -13,6 +26,9 @@ int main(int argc, char **argv) {
         printf("Not enough arguments\n");
         return 1;
     }
+
+    // initialize sigusr_ls
+    sigusr_pids = dyn_array_init();
 
     /*
        sigset_t mask;
@@ -26,7 +42,7 @@ int main(int argc, char **argv) {
 
     // register signal handler
     struct sigaction sig = {
-        .sa_handler = sigint_handler,
+        .sa_sigaction = &sigint_handler,
         .sa_flags = SA_SIGINFO
     };
 
@@ -57,51 +73,51 @@ int main(int argc, char **argv) {
     char message[BUF_SIZE];
 
     // Check for the MARKET OPEN command, and start listening for orders after
-    pause();
-    if (signal_number == SIGUSR1) {
-        signal_number = 0;
+    while (1) {
+        pause();
         read(exchange_pipe, message, BUF_SIZE);  // Read from exchange pipe
+        if (strncmp(message, "MARKET OPEN;", strlen(message)) == 0) {
+            break;
+        }
     }
 
     int order_id = 0;
     // event loop:
     while (1) {
         memset(message, 0, BUF_SIZE);
-        pause();
-        if (signal_number == SIGUSR1) {
-            // Read from exchange pipe
+        while (sigusr_pids->size != 0) {
+            /* pid_t pid = *((pid_t*) dyn_array_get(sigusr_pids, 0)); */
+                // Read from exchange pipe
             read(exchange_pipe, message, BUF_SIZE);
-            signal_number = 0;
-        }
 
-        if (strncmp(message, "MARKET SELL ", strlen("MARKET SELL ")) == 0) {
+            if (strncmp(message, "MARKET SELL ", strlen("MARKET SELL ")) == 0) {
 
-            char product[PROD_SIZE] = {0};
-            long qty = 0;
-            long price = 0;
+                char product[PROD_SIZE] = {0};
+                long qty = 0;
+                long price = 0;
 
-            sscanf(message, "%*s %*s %s %ld %ld;", product, &qty, &price);
+                sscanf(message, "%*s %*s %s %ld %ld;", product, &qty, &price);
 
-            if (qty >= 1000) {
-                // printf("DEBUG: quantity over 1000\n");
-                close(trader_pipe);
-                close(exchange_pipe);
-                return 1;
+                if (qty >= 1000) {
+                    // printf("DEBUG: quantity over 1000\n");
+                    close(trader_pipe);
+                    close(exchange_pipe);
+                    return 1;
+                }
+
+                // send order
+                memset(message, 0, BUF_SIZE);
+                snprintf(message, BUF_SIZE, "BUY %d %s %ld %ld;", order_id++, product, qty, price);
+                write(trader_pipe, message, strlen(message));
+                kill(getppid(), SIGUSR1);
+
+                memset(message, 0, BUF_SIZE);
             }
-
-            // send order
-            memset(message, 0, BUF_SIZE);
-            snprintf(message, BUF_SIZE, "BUY %d %s %ld %ld;", order_id++, product, qty, price);
-            write(trader_pipe, message, strlen(message));
-            kill(getppid(), SIGUSR1);
-
-            // wait for exchange confirmation (ACCEPTED message)
-            memset(message, 0, BUF_SIZE);
-            pause();
-            if (signal_number == SIGUSR1) {
-                read(exchange_pipe, message, BUF_SIZE);
-                signal_number = 0;
-            }
+            free(dyn_array_get(sigusr_pids, 0)); 
+            dyn_array_delete(sigusr_pids, 0);
         }
     }
+    // free everything
+    dyn_array_free_values(sigusr_pids);
+    dyn_array_free(sigusr_pids);
 }

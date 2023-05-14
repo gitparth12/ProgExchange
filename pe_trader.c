@@ -81,6 +81,8 @@ int main(int argc, char **argv) {
         }
     }
 
+    printf("this is happening\n");
+
     int order_id = 0;
     // event loop:
     while (1) {

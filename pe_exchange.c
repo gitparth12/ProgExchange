@@ -338,8 +338,15 @@ int main(int argc, char** argv) {
                     free(message);
                     // send signal
                     kill(source->pid, SIGUSR1);
-
+                    // tell all other traders
+                    message = NULL;
+                    if (found->order_type == BUY)
+                        asprintf(&message, "MARKET BUY %s %d %d;", found->prod->name, qty, price);
+                    else if (found->order_type == SELL)
+                        asprintf(&message, "MARKET SELL %s %d %d;", found->prod->name, qty, price);
+                    tell_other_traders(pexchange, source->id, message);
                     break;
+
                 case CANCEL:
                     if (sscanf(buffer, "%*s %d", &order_id) != 1) {
                         // printf("Malformed buffer: %s\n", buffer);
@@ -377,21 +384,8 @@ int main(int argc, char** argv) {
                         continue;
                     }
                     // Actually cancel the order
-                    // Remove from both source->orders and the orderbook and then free
-                    /* trader* source_trader = found->source; */
-                    /* price_entry* entry = found->price; */
-                    /* for (int k = 0; k < source_trader->orders->size; k++) { */
-                    /*     order* ord = (order*) dyn_array_get(source_trader->orders, k); */
-                    /*     if (ord->order_id == new_order->order_id) { */
-                    /*         dyn_array_delete(source_trader->orders, k); */
-                    /*         break; */
-                    /*     } */
-                    /* } */
-                    /* dyn_array_delete(entry->orders, found->index); */
-                    /* free(found); */
-
-                    // amend_order(pexchange, found, qty, price);
-                    printf("Outside cancel order: %d %d\n", found->order_id, found->qty);
+                    product* prod = found->prod;
+                    command type = found->order_type;
                     cancel_order(pexchange, found);
                     message = NULL;
                     asprintf(&message, "CANCELLED %d;", order_id);
@@ -399,6 +393,14 @@ int main(int argc, char** argv) {
                     free(message);
                     // send signal
                     kill(source->pid, SIGUSR1);
+                    // tell all other traders
+                    message = NULL;
+                    if (type == BUY)
+                        asprintf(&message, "MARKET BUY %s %d %d;", prod->name, 0, 0);
+                    else if (type == SELL)
+                        asprintf(&message, "MARKET SELL %s %d %d;", prod->name, 0, 0);
+                    tell_other_traders(pexchange, source->id, message);
+                    free(message);
                     break;
 
                 case INVALID:;

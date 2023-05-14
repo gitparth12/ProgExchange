@@ -14,10 +14,10 @@ volatile siginfo_t siginfo;
 dyn_array* sigusr_pids;
 volatile bool sigusr = false;
 void handler1(int signal_num, siginfo_t* info, void* ucontext) {
-    /* sigset_t mask; */
-    /* sigemptyset(&mask); */
-    /* sigaddset(&mask, SIGUSR1); */
-    /* sigprocmask(SIG_BLOCK, &mask, NULL); */
+    sigset_t mask;
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGUSR1);
+    sigprocmask(SIG_BLOCK, &mask, NULL);
     
     // Do some work that may take a while
     sigusr = true;
@@ -27,7 +27,7 @@ void handler1(int signal_num, siginfo_t* info, void* ucontext) {
     *pid = info->si_pid;
     dyn_array_add(sigusr_pids, (void*) pid);
 
-    /* sigprocmask(SIG_UNBLOCK, &mask, NULL); */
+    sigprocmask(SIG_UNBLOCK, &mask, NULL);
 }
 
 volatile bool sigpipe = false;
@@ -138,6 +138,12 @@ int main(int argc, char** argv) {
         }
         // Main SIGUSR1 stuff
         while(pexchange->sigusr_pids->size != 0) {
+            // block sigusr1 while order is processing
+            sigset_t mask;
+            sigemptyset(&mask);
+            sigaddset(&mask, SIGUSR1);
+            sigprocmask(SIG_BLOCK, &mask, NULL);
+
             // get pid of sigusr1 and the corresponding trader
             pid_t pid = *((pid_t*) dyn_array_get(pexchange->sigusr_pids, 0));
             // printf("pid: %ld\n", (long) pid);
@@ -411,6 +417,9 @@ int main(int argc, char** argv) {
             // remove current sigusr1 from backlog
             free(dyn_array_get(pexchange->sigusr_pids, 0));
             dyn_array_delete(pexchange->sigusr_pids, 0);
+
+            // unblock signal
+            sigprocmask(SIG_UNBLOCK, &mask, NULL);
         }
     }
 

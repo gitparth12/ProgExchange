@@ -360,6 +360,8 @@ int main(int argc, char** argv) {
                                asprintf(&message, "MARKET SELL %s %ld %ld;", found->prod->name, qty, price);
                            tell_other_traders(pexchange, source->id, message);
                            free(message);
+                           // Try to match order
+                           match_order(pexchange, found->order_type, found->prod->name, found->price->value, found, source);
                            print_report(pexchange);
                            break;
 

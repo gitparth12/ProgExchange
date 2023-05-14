@@ -14,16 +14,6 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    /*
-       sigset_t mask;
-       struct sigaction action;
-       struct siginfo_t siginfo;
-
-       sigemptyset(&mask);
-       sigaddset(&mask, SIGUSR1);
-       sigprocmask(SIG_BLOCK, &mask, NULL);
-       */
-
     // register signal handler
     struct sigaction sig = {
         .sa_handler = sigint_handler,

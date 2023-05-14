@@ -88,6 +88,12 @@ int main(int argc, char **argv) {
     while (1) {
         memset(message, 0, BUF_SIZE);
         while (sigusr_pids->size != 0) {
+            // block signals
+            sigset_t mask;
+            sigemptyset(&mask);
+            sigaddset(&mask, SIGUSR1);
+            sigprocmask(SIG_BLOCK, &mask, NULL);
+
             /* pid_t pid = *((pid_t*) dyn_array_get(sigusr_pids, 0)); */
                 // Read from exchange pipe
             read(exchange_pipe, message, BUF_SIZE);
@@ -117,6 +123,8 @@ int main(int argc, char **argv) {
             }
             free(dyn_array_get(sigusr_pids, 0)); 
             dyn_array_delete(sigusr_pids, 0);
+            // unblock signals
+            sigprocmask(SIG_UNBLOCK, &mask, NULL);
         }
     }
     // free everything

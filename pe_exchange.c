@@ -217,15 +217,10 @@ int main(int argc, char** argv) {
                     }
                     // Error checking (for INVALID cases)
                     // --> invalid price, qty or order_id
-                    int last_order;
-                    if (command_type == BUY)
-                        last_order = source->last_buy;
-                    else if (command_type == SELL)
-                        last_order = source->last_sell;
 
                     if (price <= 0 || price > 999999 || \
                             qty <= 0 || qty > 999999 || \
-                            order_id != last_order + 1) {
+                            order_id != source->last_order + 1) {
                         char* message;
                         asprintf(&message, "INVALID;");
                         write(source->exchange_pipe, message, strlen(message));
@@ -252,10 +247,7 @@ int main(int argc, char** argv) {
                         continue;
                     }
                     // update order_id
-                    if (command_type == BUY)
-                        source->last_buy = order_id;
-                    else if (command_type == SELL)
-                        source->last_sell = order_id;
+                    source->last_order = order_id;
                     // write to pipe
                     char* message;
                     asprintf(&message, "ACCEPTED %d;", order_id);

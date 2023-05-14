@@ -57,8 +57,7 @@ typedef struct{
     // array of position structs
     position* positions; // indices map to product_ls
     bool connected;
-    int last_buy;
-    int last_sell;
+    int last_order;
     dyn_array* orders;
 } trader;
 

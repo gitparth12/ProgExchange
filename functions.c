@@ -645,8 +645,7 @@ trader* initialize_trader(exchange* pexchange, int i, char** argv) {
     trader* new_trader = (trader*) malloc(sizeof(trader));
     new_trader->id = i-2;
     new_trader->positions = (position*) calloc(pexchange->num_products, sizeof(position));
-    new_trader->last_buy = -1;
-    new_trader->last_sell = -1;
+    new_trader->last_order = -1;
     new_trader->orders = dyn_array_init();
 
     asprintf(&new_trader->binary, "%s", argv[i]);

@@ -3,14 +3,17 @@
 #include "pe_common.h"
 
 void cancel_order(exchange* pexchange, order* to_cancel) {
+    printf("Inside cancel order: %d %d\n", to_cancel->order_id, to_cancel->qty);
     for (int k = 0; k < to_cancel->source->orders->size; k++) {
         order* ord = (order*) dyn_array_get(to_cancel->source->orders, k);
         if (ord->order_id == to_cancel->order_id) {
+            printf("Found order, array size: %d\n", to_cancel->source->orders->size);
             dyn_array_delete(to_cancel->source->orders, k);
+            printf("Deleted order, array size: %d\n", to_cancel->source->orders->size);
             break;
         }
     }
-    printf("info: %d %d\n", to_cancel->qty, to_cancel->price->value);
+    printf("Deleted order id and price: %d %d\n", to_cancel->order_id, to_cancel->price->value);
     dyn_array_delete(to_cancel->price->orders, to_cancel->index);
     free(to_cancel);
 }

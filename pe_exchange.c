@@ -345,6 +345,8 @@ int main(int argc, char** argv) {
                     else if (found->order_type == SELL)
                         asprintf(&message, "MARKET SELL %s %d %d;", found->prod->name, qty, price);
                     tell_other_traders(pexchange, source->id, message);
+                    free(message);
+                    print_report(pexchange);
                     break;
 
                 case CANCEL:
@@ -401,6 +403,7 @@ int main(int argc, char** argv) {
                         asprintf(&message, "MARKET SELL %s %d %d;", prod->name, 0, 0);
                     tell_other_traders(pexchange, source->id, message);
                     free(message);
+                    print_report(pexchange);
                     break;
 
                 case INVALID:;

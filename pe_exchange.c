@@ -391,6 +391,7 @@ int main(int argc, char** argv) {
                     /* free(found); */
 
                     // amend_order(pexchange, found, qty, price);
+                    print_report(pexchange);
                     cancel_order(pexchange, found);
                     message = NULL;
                     asprintf(&message, "CANCELLED %d;", order_id);

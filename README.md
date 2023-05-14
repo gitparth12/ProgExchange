@@ -17,7 +17,8 @@ the trader waits for a SIGUSR1 signal from the exchange, upon which it reads the
 If the read command is MARKET SELL, then the trader sends a MARKET BUY request to the exchange by writing
 to the trader pipe first, then trying to send a SIGUSR1 signal. In order to ensure that the trader's signal
 is not missed by the exchange, the trader sends a SIGUSR1 every 2 seconds until it receives a SIGUSR1 response
-from the exchange. At this point, the trader reads the exchange pipe again and repeats the process.
+from the exchange. This ensures that even if the exchange missed a signal sent by the trader, one signal will be caught eventually.
+At this point, the trader reads the exchange pipe again and repeats the process.
 
 3. Describe your tests and how to run them.
 

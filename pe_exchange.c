@@ -215,7 +215,7 @@ int main(int argc, char** argv) {
                           char product_name[PROD_SIZE + 1] = {0};
                           long qty;
                           long price;
-                          if (sscanf(buffer, "%*s %d %s %ld %ld %s", &order_id, product_name, &qty, &price) != 4) {
+                          if (sscanf(buffer, "%*s %d %s %ld %ld", &order_id, product_name, &qty, &price) != 4) {
                               // printf("Malformed buffer: %s\n", buffer);
                               char* message;
                               asprintf(&message, "INVALID;");

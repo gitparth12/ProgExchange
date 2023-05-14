@@ -14,10 +14,10 @@ volatile siginfo_t siginfo;
 dyn_array* sigusr_pids;
 volatile bool sigusr = false;
 void handler1(int signal_num, siginfo_t* info, void* ucontext) {
-    sigset_t mask;
-    sigemptyset(&mask);
-    sigaddset(&mask, SIGUSR1);
-    sigprocmask(SIG_BLOCK, &mask, NULL);
+    /* sigset_t mask; */
+    /* sigemptyset(&mask); */
+    /* sigaddset(&mask, SIGUSR1); */
+    /* sigprocmask(SIG_BLOCK, &mask, NULL); */
     
     // Do some work that may take a while
     sigusr = true;
@@ -27,7 +27,7 @@ void handler1(int signal_num, siginfo_t* info, void* ucontext) {
     *pid = info->si_pid;
     dyn_array_add(sigusr_pids, (void*) pid);
 
-    sigprocmask(SIG_UNBLOCK, &mask, NULL);
+    /* sigprocmask(SIG_UNBLOCK, &mask, NULL); */
 }
 
 volatile bool sigpipe = false;

@@ -5,6 +5,7 @@
 void cancel_order(exchange* pexchange, order* to_cancel) {
     printf("Inside cancel order: order_id:%d qty:%d\n", to_cancel->order_id, to_cancel->qty);
     printf("address of order: %p\n", to_cancel);
+    printf("before delete order price: %d\n", to_cancel->price->value);
     order* temp = to_cancel;
     for (int k = 0; k < to_cancel->source->orders->size; k++) {
         order* ord = (order*) dyn_array_get(to_cancel->source->orders, k);

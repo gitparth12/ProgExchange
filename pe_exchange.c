@@ -220,6 +220,7 @@ int main(int argc, char** argv) {
 
                     if (price <= 0 || price > 999999 || \
                             qty <= 0 || qty > 999999 || \
+                            order_id < 0 || order_id > 999999 || \
                             order_id != source->last_order + 1) {
                         char* message;
                         asprintf(&message, "INVALID;");

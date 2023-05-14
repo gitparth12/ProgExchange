@@ -517,9 +517,9 @@ void print_report(exchange* pexchange) {
     }
 }
 
-int read_dynamic(int fd, char* buffer) {
+/* int read_dynamic(int fd, char* buffer) { */
     
-}
+/* } */
 
 int read_command(int fd, char* buffer) {
     char temp = 0;

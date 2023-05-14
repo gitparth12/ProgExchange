@@ -3,7 +3,9 @@
 #include "pe_common.h"
 
 void cancel_order(exchange* pexchange, order* to_cancel) {
-    printf("Inside cancel order: %d %d\n", to_cancel->order_id, to_cancel->qty);
+    printf("Inside cancel order: order_id:%d qty:%d\n", to_cancel->order_id, to_cancel->qty);
+    printf("address of order: %p\n", to_cancel);
+    order* temp = to_cancel;
     for (int k = 0; k < to_cancel->source->orders->size; k++) {
         order* ord = (order*) dyn_array_get(to_cancel->source->orders, k);
         if (ord->order_id == to_cancel->order_id) {
@@ -13,7 +15,9 @@ void cancel_order(exchange* pexchange, order* to_cancel) {
             break;
         }
     }
-    printf("Deleted order id and price: %d %d\n", to_cancel->order_id, to_cancel->price->value);
+    printf("address of order after deleting: %p, address of temp: %p\n", to_cancel, temp);
+    printf("Deleted order id: %d\n", to_cancel->order_id);
+    printf("Deleted order price: %d\n", to_cancel->price->value);
     dyn_array_delete(to_cancel->price->orders, to_cancel->index);
     free(to_cancel);
 }

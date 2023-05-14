@@ -527,7 +527,7 @@ int read_dynamic(int fd, char** buffer) {
         buflen++;
         allocated = (char*) realloc(allocated, buflen * sizeof(char));
         if (read(fd, &temp, 1) == -1) {
-            printf("Error while reading command.\nRead so far: %s\n", allocated);
+            // printf("Error while reading command.\nRead so far: %s\n", allocated);
             return -1;
         }
         if (temp == ';')
@@ -535,6 +535,9 @@ int read_dynamic(int fd, char** buffer) {
         else if (temp == ' ')
             spaces++;
     }
+    buflen++;
+    allocated = (char*) realloc(allocated, buflen * sizeof(char));
+    allocated[buflen-1] = '\0';
     *buffer = allocated;
     return spaces;
 }

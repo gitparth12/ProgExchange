@@ -118,21 +118,6 @@ int main(int argc, char **argv) {
                 snprintf(message, BUF_SIZE, "BUY %d %s %ld %ld;", order_id++, product, qty, price);
                 write(trader_pipe, message, strlen(message));
                 kill(getppid(), SIGUSR1);
-                // loop, sending sigusr1 until you get a signal back
-                time_t start, end;
-                double elapsed;  // seconds
-                start = time(NULL);
-                int terminate = 1;
-                while (terminate) {
-                    end = time(NULL);
-                    elapsed = difftime(end, start);
-                    if (elapsed >= 2.0 /* seconds */ && !sigusr) {
-                        /* terminate = 0; */
-                        kill(getppid(), SIGUSR1);
-                    }
-                    else if (sigusr) // No need to sleep when 90.0 seconds elapsed.
-                        terminate = 0;
-                }
 
                 memset(message, 0, BUF_SIZE);
             }

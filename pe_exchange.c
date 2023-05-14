@@ -200,9 +200,9 @@ int main(int argc, char** argv) {
                     // store everything in variables
                     int order_id;
                     char product_name[PROD_SIZE + 1] = {0};
-                    int qty;
-                    int price;
-                    if (sscanf(buffer, "%*s %d %16s %d %d", &order_id, product_name, &qty, &price) != 4) {
+                    long qty;
+                    long price;
+                    if (sscanf(buffer, "%*s %d %s %ld %ld", &order_id, product_name, &qty, &price) != 4) {
                         // printf("Malformed buffer: %s\n", buffer);
                         char* message;
                         asprintf(&message, "INVALID;");
@@ -257,9 +257,9 @@ int main(int argc, char** argv) {
                     kill(source->pid, SIGUSR1);
                     // write to all other traders and send signals
                     if (command_type == BUY)
-                        asprintf(&message, "MARKET BUY %s %d %d;", product_name, qty, price);
+                        asprintf(&message, "MARKET BUY %s %ld %ld;", product_name, qty, price);
                     else if (command_type == SELL)
-                        asprintf(&message, "MARKET SELL %s %d %d;", product_name, qty, price);
+                        asprintf(&message, "MARKET SELL %s %ld %ld;", product_name, qty, price);
                     tell_other_traders(pexchange, source->id, message);                
                     free(message);
                     // Try to match order
@@ -272,7 +272,7 @@ int main(int argc, char** argv) {
                     /* int order_id; */
                     /* int qty; */
                     /* int price; */
-                    if (sscanf(buffer, "%*s %d %d %d", &order_id, &qty, &price) != 3) {
+                    if (sscanf(buffer, "%*s %d %ld %ld", &order_id, &qty, &price) != 3) {
                         // printf("Malformed buffer: %s\n", buffer);
                         char* message;
                         asprintf(&message, "INVALID;");
@@ -333,9 +333,9 @@ int main(int argc, char** argv) {
                     // tell all other traders
                     message = NULL;
                     if (found->order_type == BUY)
-                        asprintf(&message, "MARKET BUY %s %d %d;", found->prod->name, qty, price);
+                        asprintf(&message, "MARKET BUY %s %ld %ld;", found->prod->name, qty, price);
                     else if (found->order_type == SELL)
-                        asprintf(&message, "MARKET SELL %s %d %d;", found->prod->name, qty, price);
+                        asprintf(&message, "MARKET SELL %s %ld %ld;", found->prod->name, qty, price);
                     tell_other_traders(pexchange, source->id, message);
                     free(message);
                     print_report(pexchange);

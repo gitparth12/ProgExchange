@@ -77,10 +77,10 @@ int main(int argc, char **argv) {
         if (strncmp(message, "MARKET SELL ", strlen("MARKET SELL ")) == 0) {
 
             char product[PROD_SIZE] = {0};
-            int qty = 0;
-            int price = 0;
+            long qty = 0;
+            long price = 0;
 
-            sscanf(message, "%*s %*s %s %d %d;", product, &qty, &price);
+            sscanf(message, "%*s %*s %s %ld %ld;", product, &qty, &price);
 
             if (qty >= 1000) {
                 // printf("DEBUG: quantity over 1000\n");
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
 
             // send order
             memset(message, 0, BUF_SIZE);
-            snprintf(message, BUF_SIZE, "BUY %d %s %d %d;", order_id++, product, qty, price);
+            snprintf(message, BUF_SIZE, "BUY %d %s %ld %ld;", order_id++, product, qty, price);
             write(trader_pipe, message, strlen(message));
             kill(getppid(), SIGUSR1);
 

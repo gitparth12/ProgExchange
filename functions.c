@@ -22,7 +22,7 @@ void cancel_order(exchange* pexchange, order* to_cancel) {
     free(to_cancel);
 }
 
-void amend_order(exchange* pexchange, order* to_amend, int qty, int price) {
+void amend_order(exchange* pexchange, order* to_amend, long qty, long price) {
     dyn_array_delete(to_amend->price->orders, to_amend->index);
     to_amend->qty = qty;
     price_entry* prod_price;
@@ -52,7 +52,7 @@ void amend_order(exchange* pexchange, order* to_amend, int qty, int price) {
     }
 }
 
-void match_order(exchange* pexchange, command command_type, char* product_name, int price, order* new_order, trader* source) {
+void match_order(exchange* pexchange, command command_type, char* product_name, long price, order* new_order, trader* source) {
     product* prod = (product*) dyn_array_get_product(pexchange->product_list, product_name);
     int prod_index;
     for (int i = 0; i < pexchange->product_list->size; i++) {
@@ -81,21 +81,21 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                         order* current_order = (order*) dyn_array_get(current_price->orders, j);
                         if (current_order->qty > new_order->qty) {
                             // take qty from current order and remove new_order
-                            int value = current_price->value * new_order->qty;
-                            int fee = round(0.01 * value);
+                            long value = current_price->value * new_order->qty;
+                            long fee = round(0.01 * value);
                             // [PEX] Match: Order 3 [T0], New Order 1 [T1], value: $15060, fee: $151.
-                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
+                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%ld, fee: $%ld.\n",
                                     LOG_PREFIX, current_order->order_id, current_order->source->id,
                                     new_order->order_id, new_order->source->id, value, fee);
                             // FILL ORDER
                             char* message;
                             // send to buyer
-                            asprintf(&message, "FILL %d %d;", new_order->order_id, new_order->qty);
+                            asprintf(&message, "FILL %d %ld;", new_order->order_id, new_order->qty);
                             write(new_order->source->exchange_pipe, message, strlen(message));
                             kill(new_order->source->pid, SIGUSR1);
                             free(message);
                             // send to seller
-                            asprintf(&message, "FILL %d %d;", current_order->order_id, new_order->qty);
+                            asprintf(&message, "FILL %d %ld;", current_order->order_id, new_order->qty);
                             write(current_order->source->exchange_pipe, message, strlen(message));
                             kill(current_order->source->pid, SIGUSR1);
                             free(message);
@@ -122,21 +122,21 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                         }
                         else if (current_order->qty == new_order->qty) {
                             // fulfill order and remove both current and new order
-                            int value = current_price->value * new_order->qty;
-                            int fee = round(0.01 * value);
+                            long value = current_price->value * new_order->qty;
+                            long fee = round(0.01 * value);
                             // [PEX] Match: Order 3 [T0], New Order 1 [T1], value: $15060, fee: $151.
-                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
+                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%ld, fee: $%ld.\n",
                                     LOG_PREFIX, current_order->order_id, current_order->source->id,
                                     new_order->order_id, new_order->source->id, value, fee);
                             // FILL ORDER
                             char* message;
                             // send to buyer
-                            asprintf(&message, "FILL %d %d;", new_order->order_id, new_order->qty);
+                            asprintf(&message, "FILL %d %ld;", new_order->order_id, new_order->qty);
                             write(new_order->source->exchange_pipe, message, strlen(message));
                             kill(new_order->source->pid, SIGUSR1);
                             free(message);
                             // send to seller
-                            asprintf(&message, "FILL %d %d;", current_order->order_id, new_order->qty);
+                            asprintf(&message, "FILL %d %ld;", current_order->order_id, new_order->qty);
                             write(current_order->source->exchange_pipe, message, strlen(message));
                             kill(current_order->source->pid, SIGUSR1);
                             free(message);
@@ -170,20 +170,20 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                         }
                         else if (current_order->qty < new_order->qty) {
                             // take all qty from current order, remove current order and move onto next order in list
-                            int value = current_price->value * current_order->qty;
-                            int fee = round(0.01 * value);
-                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
+                            long value = current_price->value * current_order->qty;
+                            long fee = round(0.01 * value);
+                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%ld, fee: $%ld.\n",
                                     LOG_PREFIX, current_order->order_id, current_order->source->id,
                                     new_order->order_id, new_order->source->id, value, fee);
                             // FILL ORDER
                             char* message;
                             // send to buyer
-                            asprintf(&message, "FILL %d %d;", new_order->order_id, current_order->qty);
+                            asprintf(&message, "FILL %d %ld;", new_order->order_id, current_order->qty);
                             write(new_order->source->exchange_pipe, message, strlen(message));
                             kill(new_order->source->pid, SIGUSR1);
                             free(message);
                             // send to seller
-                            asprintf(&message, "FILL %d %d;", current_order->order_id, current_order->qty);
+                            asprintf(&message, "FILL %d %ld;", current_order->order_id, current_order->qty);
                             write(current_order->source->exchange_pipe, message, strlen(message));
                             kill(current_order->source->pid, SIGUSR1);
                             free(message);
@@ -228,21 +228,21 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                         order* current_order = (order*) dyn_array_get(current_price->orders, j);
                         if (current_order->qty > new_order->qty) {
                             // take all qty from new_order and remove new_order
-                            int value = current_price->value * new_order->qty;
-                            int fee = round(0.01 * value);
+                            long value = current_price->value * new_order->qty;
+                            long fee = round(0.01 * value);
                             // [PEX] Match: Order 3 [T0], New Order 1 [T1], value: $15060, fee: $151.
-                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
+                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%ld, fee: $%ld.\n",
                                     LOG_PREFIX, current_order->order_id, current_order->source->id,
                                     new_order->order_id, new_order->source->id, value, fee);
                             // FILL ORDER
                             char* message;
                             // send to buyer
-                            asprintf(&message, "FILL %d %d;", current_order->order_id, new_order->qty);
+                            asprintf(&message, "FILL %d %ld;", current_order->order_id, new_order->qty);
                             write(current_order->source->exchange_pipe, message, strlen(message));
                             kill(current_order->source->pid, SIGUSR1);
                             free(message);
                             // send to seller
-                            asprintf(&message, "FILL %d %d;", new_order->order_id, new_order->qty);
+                            asprintf(&message, "FILL %d %ld;", new_order->order_id, new_order->qty);
                             write(new_order->source->exchange_pipe, message, strlen(message));
                             kill(new_order->source->pid, SIGUSR1);
                             free(message);
@@ -269,21 +269,21 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                         }
                         else if (current_order->qty == new_order->qty) {
                             // fulfill order and remove both current and new order
-                            int value = current_price->value * new_order->qty;
-                            int fee = round(0.01 * value);
+                            long value = current_price->value * new_order->qty;
+                            long fee = round(0.01 * value);
                             // [PEX] Match: Order 3 [T0], New Order 1 [T1], value: $15060, fee: $151.
-                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
+                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%ld, fee: $%ld.\n",
                                     LOG_PREFIX, current_order->order_id, current_order->source->id,
                                     new_order->order_id, new_order->source->id, value, fee);
                             // FILL ORDER
                             char* message;
                             // send to buyer
-                            asprintf(&message, "FILL %d %d;", current_order->order_id, new_order->qty);
+                            asprintf(&message, "FILL %d %ld;", current_order->order_id, new_order->qty);
                             write(current_order->source->exchange_pipe, message, strlen(message));
                             kill(current_order->source->pid, SIGUSR1);
                             free(message);
                             // send to seller
-                            asprintf(&message, "FILL %d %d;", new_order->order_id, new_order->qty);
+                            asprintf(&message, "FILL %d %ld;", new_order->order_id, new_order->qty);
                             write(new_order->source->exchange_pipe, message, strlen(message));
                             kill(new_order->source->pid, SIGUSR1);
                             free(message);
@@ -317,20 +317,20 @@ void match_order(exchange* pexchange, command command_type, char* product_name, 
                         }
                         else if (current_order->qty < new_order->qty) {
                             // take all qty from new order, remove current order and move onto next order in list
-                            int value = current_price->value * current_order->qty;
-                            int fee = round(0.01 * value);
-                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%d, fee: $%d.\n",
+                            long value = current_price->value * current_order->qty;
+                            long fee = round(0.01 * value);
+                            printf("%s Match: Order %d [T%d], New Order %d [T%d], value: $%ld, fee: $%ld.\n",
                                     LOG_PREFIX, current_order->order_id, current_order->source->id,
                                     new_order->order_id, new_order->source->id, value, fee);
                             // FILL ORDER
                             char* message;
                             // send to buyer
-                            asprintf(&message, "FILL %d %d;", current_order->order_id, current_order->qty);
+                            asprintf(&message, "FILL %d %ld;", current_order->order_id, current_order->qty);
                             write(current_order->source->exchange_pipe, message, strlen(message));
                             kill(current_order->source->pid, SIGUSR1);
                             free(message);
                             // send to seller
-                            asprintf(&message, "FILL %d %d;", new_order->order_id, current_order->qty);
+                            asprintf(&message, "FILL %d %ld;", new_order->order_id, current_order->qty);
                             write(new_order->source->exchange_pipe, message, strlen(message));
                             kill(new_order->source->pid, SIGUSR1);
                             free(message);
@@ -395,7 +395,7 @@ void clean_prices(exchange* pexchange) { // remove price entries that have 0 ord
     }
 }
 
-order* store_product(exchange* pexchange, trader* source, command command_type, int order_id, char* product_name, int qty, int price) {
+order* store_product(exchange* pexchange, trader* source, command command_type, int order_id, char* product_name, long qty, long price) {
     // find the product the order is for
     product* prod = dyn_array_get_product(pexchange->product_list, product_name);
     if (prod == NULL) {
@@ -471,7 +471,7 @@ void print_report(exchange* pexchange) {
         for (int j = prod->sell_prices->size-1; j >= 0; j--) {
             price_entry* price = (price_entry*) dyn_array_get(prod->sell_prices, j); 
             // print every price level
-            int qty = 0;
+            long qty = 0;
             for (int k = 0; k < price->orders->size; k++) {
                 order* ord = (order*) dyn_array_get(price->orders, k);
                 qty += ord->qty;
@@ -479,15 +479,15 @@ void print_report(exchange* pexchange) {
             if (price->orders->size == 0)
                 continue;
             else if (price->orders->size == 1)
-                printf("%s\t\tSELL %d @ $%d (%d order)\n", LOG_PREFIX, qty, price->value, price->orders->size);
+                printf("%s\t\tSELL %ld @ $%ld (%d order)\n", LOG_PREFIX, qty, price->value, price->orders->size);
             else
-                printf("%s\t\tSELL %d @ $%d (%d orders)\n", LOG_PREFIX, qty, price->value, price->orders->size);
+                printf("%s\t\tSELL %ld @ $%ld (%d orders)\n", LOG_PREFIX, qty, price->value, price->orders->size);
         }
         // print buy levels
         for (int j = prod->buy_prices->size-1; j >= 0; j--) {
             price_entry* price = (price_entry*) dyn_array_get(prod->buy_prices, j); 
             // print every price level
-            int qty = 0;
+            long qty = 0;
             for (int k = 0; k < price->orders->size; k++) {
                 order* ord = (order*) dyn_array_get(price->orders, k);
                 qty += ord->qty;
@@ -495,9 +495,9 @@ void print_report(exchange* pexchange) {
             if (price->orders->size == 0)
                 continue;
             else if (price->orders->size == 1)
-                printf("%s\t\tBUY %d @ $%d (%d order)\n", LOG_PREFIX, qty, price->value, price->orders->size);
+                printf("%s\t\tBUY %ld @ $%ld (%d order)\n", LOG_PREFIX, qty, price->value, price->orders->size);
             else
-                printf("%s\t\tBUY %d @ $%d (%d orders)\n", LOG_PREFIX, qty, price->value, price->orders->size);
+                printf("%s\t\tBUY %ld @ $%ld (%d orders)\n", LOG_PREFIX, qty, price->value, price->orders->size);
         }
     }
     // print positions
@@ -509,9 +509,9 @@ void print_report(exchange* pexchange) {
         for (int j = 0; j < pexchange->product_list->size; j++) {
             product* prod = (product*) dyn_array_get(pexchange->product_list, j);
             if (j == 0)
-                printf("%s %d ($%d)", prod->name, current->positions[j].qty, current->positions[j].net_value);
+                printf("%s %ld ($%ld)", prod->name, current->positions[j].qty, current->positions[j].net_value);
             else
-                printf(", %s %d ($%d)", prod->name, current->positions[j].qty, current->positions[j].net_value);
+                printf(", %s %ld ($%ld)", prod->name, current->positions[j].qty, current->positions[j].net_value);
         }
         printf("\n");
     }
@@ -578,8 +578,8 @@ bool validate_buysell(char* command) {
     }
     // error checking with integer values in command
     int order_id;
-    int qty;
-    int price;
+    long qty;
+    long price;
     if ((order_id = atoi(order_id_string)) == 0 && (strncmp(order_id_string, "0", strlen(order_id_string))) != 0) {
         printf("order_id error\n");
         return false;
@@ -627,7 +627,7 @@ void handle_products(dyn_array* product_list, FILE* fproducts, int* num_products
         product* new_product = (product*) malloc(sizeof(product));
         fgets(temp, PRODUCT_NAME_SIZE, fproducts);
         temp[strcspn(temp, "\n")] = 0;
-        asprintf(&new_product->name, "%16s", temp);
+        asprintf(&new_product->name, "%s", temp);
         new_product->buy_prices = dyn_array_init();
         new_product->sell_prices = dyn_array_init();
         dyn_array_add(product_list, (void*) new_product);

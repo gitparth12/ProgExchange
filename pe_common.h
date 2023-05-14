@@ -42,8 +42,8 @@ typedef struct{
 } exchange;
 
 typedef struct{
-    int qty;
-    int net_value;
+    long qty;
+    long net_value;
 } position;
 
 typedef struct{
@@ -62,7 +62,7 @@ typedef struct{
 } trader;
 
 typedef struct{
-    int value;
+    long value;
     dyn_array* orders; // order structs
 } price_entry;
 
@@ -82,7 +82,7 @@ typedef enum {
 
 typedef struct{
     int order_id;
-    int qty;
+    long qty;
     trader* source;
     product* prod;
     price_entry* price;

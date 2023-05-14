@@ -120,7 +120,7 @@ product* dyn_array_get_product(dyn_array* dyn, char* name) {
     return NULL;
 }
 
-price_entry* dyn_array_get_price_entry(dyn_array* dyn, int value) {
+price_entry* dyn_array_get_price_entry(dyn_array* dyn, long value) {
     for (int i = 0; i < dyn->size; i++) {
         price_entry* current = (price_entry*) dyn_array_get(dyn, i);
         if (current->value == value) {

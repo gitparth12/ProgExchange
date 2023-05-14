@@ -218,8 +218,8 @@ int main(int argc, char** argv) {
                     // Error checking (for INVALID cases)
                     // --> invalid price, qty or order_id
 
-                    if (price <= 0 || price > 999999 || \
-                            qty <= 0 || qty > 999999 || \
+                    if (price <= 1 || price > 999999 || \
+                            qty <= 1 || qty > 999999 || \
                             order_id != source->last_order + 1) {
                         char* message;
                         asprintf(&message, "INVALID;");
@@ -288,8 +288,8 @@ int main(int argc, char** argv) {
                     // Error checking (for INVALID cases)
                     // --> invalid price, qty or order_id
                     // 1. price, order_id, qty
-                    if (price <= 0 || price > 999999 || \
-                            qty <= 0 || qty > 999999) {
+                    if (price <= 1 || price > 999999 || \
+                            qty <= 1 || qty > 999999) {
                         char* message;
                         asprintf(&message, "INVALID;");
                         write(source->exchange_pipe, message, strlen(message));

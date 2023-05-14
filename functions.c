@@ -746,7 +746,7 @@ void free_memory(exchange* pexchange) {
 
 void teardown(exchange* pexchange) {
     printf("%s Trading completed\n", LOG_PREFIX);
-    printf("%s Exchange fees collected: $%d\n", LOG_PREFIX, pexchange->fee);
+    printf("%s Exchange fees collected: $%ld\n", LOG_PREFIX, pexchange->fee);
     free_memory(pexchange);
 }
 /*

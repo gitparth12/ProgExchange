@@ -531,7 +531,7 @@ char* read_dynamic(int fd, int* spaces) {
             return NULL;
         }
         if (temp == ';')
-            allocated[buflen-1] = temp;
+            strncpy(&allocated[buflen-1], &temp, 1);
         else if (temp == ' ')
             *spaces += 1;
     }

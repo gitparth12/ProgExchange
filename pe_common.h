@@ -16,6 +16,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <math.h>
+#include <time.h>
 
 #define FIFO_EXCHANGE "/tmp/pe_exchange_%d"
 #define FIFO_TRADER "/tmp/pe_trader_%d"

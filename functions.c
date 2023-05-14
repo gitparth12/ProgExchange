@@ -699,19 +699,19 @@ void launch_trader(exchange* pexchange, trader* new_trader, int i, char** argv) 
     }
 
     // CONNECT TO PIPES
-    if ((new_trader->exchange_pipe = open(new_trader->exchange_pipe_path, O_WRONLY)) == -1) {
-        printf("\nTrader id: %d\n", i);
-        perror("Error opening exchange_pipe");
-    }
-    else {
-        printf("%s Connected to %s\n", LOG_PREFIX, new_trader->exchange_pipe_path);
-    }
     if ((new_trader->trader_pipe = open(new_trader->trader_pipe_path, O_RDONLY)) == -1) {
         printf("\nTrader id: %d\n", i);
         perror("Error opening trader_pipe");
     }
     else {
         printf("%s Connected to %s\n", LOG_PREFIX, new_trader->trader_pipe_path);
+    }
+    if ((new_trader->exchange_pipe = open(new_trader->exchange_pipe_path, O_WRONLY)) == -1) {
+        printf("\nTrader id: %d\n", i);
+        perror("Error opening exchange_pipe");
+    }
+    else {
+        printf("%s Connected to %s\n", LOG_PREFIX, new_trader->exchange_pipe_path);
     }
 }
 

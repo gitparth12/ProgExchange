@@ -433,6 +433,8 @@ int main(int argc, char** argv) {
 
             // unblock signal
             sigprocmask(SIG_UNBLOCK, &mask, NULL);
+            // free buffer
+            free(buffer);
         }
     }
 

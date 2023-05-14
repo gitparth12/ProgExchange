@@ -517,10 +517,10 @@ void print_report(exchange* pexchange) {
     }
 }
 
-int read_dynamic(int fd, char** buffer) {
+char* read_dynamic(int fd, int* spaces) {
     char temp = 0;
     int buflen = 0;
-    int spaces = 0;
+    *spaces = 0;
     char* allocated = NULL;
     while (temp != ';') {
         // read another char
@@ -528,18 +528,17 @@ int read_dynamic(int fd, char** buffer) {
         allocated = (char*) realloc(allocated, buflen * sizeof(char));
         if (read(fd, &temp, 1) == -1) {
             // printf("Error while reading command.\nRead so far: %s\n", allocated);
-            return -1;
+            return NULL;
         }
         if (temp == ';')
             allocated[buflen-1] = temp;
         else if (temp == ' ')
-            spaces++;
+            *spaces += 1;
     }
     buflen++;
     allocated = (char*) realloc(allocated, buflen * sizeof(char));
     allocated[buflen-1] = '\0';
-    *buffer = allocated;
-    return spaces;
+    return allocated;
 }
 
 int read_command(int fd, char* buffer) {

@@ -215,7 +215,7 @@ int main(int argc, char** argv) {
                           char product_name[PROD_SIZE + 1] = {0};
                           long qty;
                           long price;
-                          if (sscanf(buffer, "%*s %d %s %ld %ld", &order_id, product_name, &qty, &price) != 4) {
+                          if (sscanf(buffer, "%*s %d %s %ld %ld %s", &order_id, product_name, &qty, &price) != 4) {
                               // printf("Malformed buffer: %s\n", buffer);
                               char* message;
                               asprintf(&message, "INVALID;");
@@ -235,7 +235,8 @@ int main(int argc, char** argv) {
                           if (price <= 0 || price > 999999 || \
                                   qty <= 0 || qty > 999999 || \
                                   order_id < 0 || order_id > 999999 || \
-                                  order_id != source->last_order + 1) {
+                                  order_id != source->last_order + 1 || \
+                                  spaces != 4) {
                               char* message;
                               asprintf(&message, "INVALID;");
                               write(source->exchange_pipe, message, strlen(message));
@@ -307,7 +308,8 @@ int main(int argc, char** argv) {
                            // --> invalid price, qty or order_id
                            // 1. price, order_id, qty
                            if (price <= 0 || price > 999999 || \
-                                   qty <= 0 || qty > 999999) {
+                                   qty <= 0 || qty > 999999 || \
+                                   spaces != 3) {
                                char* message;
                                asprintf(&message, "INVALID;");
                                write(source->exchange_pipe, message, strlen(message));
@@ -362,7 +364,7 @@ int main(int argc, char** argv) {
                            break;
 
                 case CANCEL:
-                           if (sscanf(buffer, "%*s %d", &order_id) != 1) {
+                           if (sscanf(buffer, "%*s %d", &order_id) != 1 || spaces != 1) {
                                // printf("Malformed buffer: %s\n", buffer);
                                char* message;
                                asprintf(&message, "INVALID;");

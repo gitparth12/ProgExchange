@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
         return 4;
     }
 
-    // Making exchange struct
+    // Making exchange struct 
     exchange exchange_data = {
         .product_list = dyn_array_init(),
         .traders = dyn_array_init(),

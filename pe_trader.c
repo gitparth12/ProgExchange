@@ -68,40 +68,40 @@ int main(int argc, char **argv) {
     while (1) {
         memset(message, 0, BUF_SIZE);
         pause();
-        if (signal_number == SIGUSR1) {
-            // Read from exchange pipe
-            read(exchange_pipe, message, BUF_SIZE);
-            signal_number = 0;
+
+        // Read from exchange pipe
+        read(exchange_pipe, message, BUF_SIZE);
+        signal_number = 0;
+
+
+        char product[PROD_SIZE] = {0};
+        int qty = 0;
+        int price = 0;
+
+        sscanf(message, "%*s %*s %s %d %d;", product, &qty, &price);
+
+        if (qty >= 1000) {
+            // printf("DEBUG: quantity over 1000\n");
+            close(trader_pipe);
+            close(exchange_pipe);
+            return 1;
         }
 
         if (strncmp(message, "MARKET SELL ", strlen("MARKET SELL ")) == 0) {
-
-            char product[PROD_SIZE] = {0};
-            int qty = 0;
-            int price = 0;
-
-            sscanf(message, "%*s %*s %s %d %d;", product, &qty, &price);
-
-            if (qty >= 1000) {
-                // printf("DEBUG: quantity over 1000\n");
-                close(trader_pipe);
-                close(exchange_pipe);
-                return 1;
-            }
-
             // send order
             memset(message, 0, BUF_SIZE);
             snprintf(message, BUF_SIZE, "BUY %d %s %d %d;", order_id++, product, qty, price);
             write(trader_pipe, message, strlen(message));
-            kill(getppid(), SIGUSR1);
+
+            while (!signal_number) {
+                kill(getppid(), SIGUSR1);
+                sleep(2);
+            }
 
             // wait for exchange confirmation (ACCEPTED message)
             memset(message, 0, BUF_SIZE);
-            pause();
-            if (signal_number == SIGUSR1) {
-                read(exchange_pipe, message, BUF_SIZE);
-                signal_number = 0;
-            }
+            read(exchange_pipe, message, BUF_SIZE);
+            signal_number = 0;
         }
     }
 }

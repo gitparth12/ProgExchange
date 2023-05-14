@@ -521,7 +521,7 @@ int read_dynamic(int fd, char** buffer) {
     char temp = 0;
     int buflen = 0;
     int spaces = 0;
-    char* allocated;
+    char* allocated = NULL;
     while (temp != ';') {
         // read another char
         buflen++;

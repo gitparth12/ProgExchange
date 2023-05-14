@@ -18,7 +18,7 @@ void handler1(int signal_num, siginfo_t* info, void* ucontext) {
     sigemptyset(&mask);
     sigaddset(&mask, SIGUSR1);
     sigprocmask(SIG_BLOCK, &mask, NULL);
-    
+
     // Do some work that may take a while
     sigusr = true;
     // signo = signal_num;
@@ -46,14 +46,14 @@ void handler3(int signal_num, siginfo_t* info, void* ucontext) {
 
 
 /*
-void sighandler(int random, siginfo_t *info) {
-    info->si_pid;
-}
+   void sighandler(int random, siginfo_t *info) {
+   info->si_pid;
+   }
 
-sigaction(SIGUSR1, &sig, NULL);
-sigaction(SIGCHLD, &sig, NULL);
-sigaction(SIGPIPE, )
-*/
+   sigaction(SIGUSR1, &sig, NULL);
+   sigaction(SIGCHLD, &sig, NULL);
+   sigaction(SIGPIPE, )
+   */
 
 int main(int argc, char** argv) {
     // ERROR CHECKING
@@ -114,11 +114,11 @@ int main(int argc, char** argv) {
             break;
         }
         /*
-        if (pexchange->traders->size == 0) {
-            teardown(pexchange);
-            break;
-        }
-        */
+           if (pexchange->traders->size == 0) {
+           teardown(pexchange);
+           break;
+           }
+           */
         // check for SIGPIPE or SIGCHLD
         if (sigpipe || sigchld) {
             sigpipe = false;
@@ -152,25 +152,28 @@ int main(int argc, char** argv) {
                 printf("Source of sigusr1 (trader) doesn't exist in list.\n");
                 free(dyn_array_get(pexchange->sigusr_pids, 0));
                 dyn_array_delete(pexchange->sigusr_pids, 0);
+                sigprocmask(SIG_UNBLOCK, &mask, NULL);
                 continue;
             }
             if (source->connected == false) {
                 free(dyn_array_get(pexchange->sigusr_pids, 0));
                 dyn_array_delete(pexchange->sigusr_pids, 0);
+                sigprocmask(SIG_UNBLOCK, &mask, NULL);
                 continue;
             }
             // scan input from that trader's pipe
             char buffer[BUF_SIZE] = {0};
             // read_command(source->trader_pipe, buffer);
-            
+
             if (read_command(source->trader_pipe, buffer) == -1) {
                 printf("Couldn't read from trader pipe.\n");
                 perror("read error: ");
                 free(dyn_array_get(pexchange->sigusr_pids, 0));
                 dyn_array_delete(pexchange->sigusr_pids, 0);
+                sigprocmask(SIG_UNBLOCK, &mask, NULL);
                 continue;
             }
-            
+
 
             // check if message fits in max buffer size
             if (buffer[BUF_SIZE-1] != '\0') {
@@ -178,6 +181,7 @@ int main(int argc, char** argv) {
                 printf("%s\n\n", buffer);
                 free(dyn_array_get(pexchange->sigusr_pids, 0));
                 dyn_array_delete(pexchange->sigusr_pids, 0);
+                sigprocmask(SIG_UNBLOCK, &mask, NULL);
                 continue;
             }
             // PROCESS MESSAGE
@@ -203,216 +207,224 @@ int main(int argc, char** argv) {
             switch (command_type) {
                 case BUY:
                 case SELL:;
-                    // store everything in variables
-                    int order_id;
-                    char product_name[PROD_SIZE + 1] = {0};
-                    long qty;
-                    long price;
-                    if (sscanf(buffer, "%*s %d %s %ld %ld", &order_id, product_name, &qty, &price) != 4) {
-                        // printf("Malformed buffer: %s\n", buffer);
-                        char* message;
-                        asprintf(&message, "INVALID;");
-                        write(source->exchange_pipe, message, strlen(message));
-                        free(message);
-                        // send signal
-                        kill(source->pid, SIGUSR1);
-                        // remove current pid
-                        free(dyn_array_get(pexchange->sigusr_pids, 0));
-                        dyn_array_delete(pexchange->sigusr_pids, 0);
-                        continue;
-                    }
-                    // Error checking (for INVALID cases)
-                    // --> invalid price, qty or order_id
+                          // store everything in variables
+                          int order_id;
+                          char product_name[PROD_SIZE + 1] = {0};
+                          long qty;
+                          long price;
+                          if (sscanf(buffer, "%*s %d %s %ld %ld", &order_id, product_name, &qty, &price) != 4) {
+                              // printf("Malformed buffer: %s\n", buffer);
+                              char* message;
+                              asprintf(&message, "INVALID;");
+                              write(source->exchange_pipe, message, strlen(message));
+                              free(message);
+                              // send signal
+                              kill(source->pid, SIGUSR1);
+                              // remove current pid
+                              free(dyn_array_get(pexchange->sigusr_pids, 0));
+                              dyn_array_delete(pexchange->sigusr_pids, 0);
+                              sigprocmask(SIG_UNBLOCK, &mask, NULL);
+                              continue;
+                          }
+                          // Error checking (for INVALID cases)
+                          // --> invalid price, qty or order_id
 
-                    if (price <= 0 || price > 999999 || \
-                            qty <= 0 || qty > 999999 || \
-                            order_id < 0 || order_id > 999999 || \
-                            order_id != source->last_order + 1) {
-                        char* message;
-                        asprintf(&message, "INVALID;");
-                        write(source->exchange_pipe, message, strlen(message));
-                        free(message);
-                        // send signal
-                        kill(source->pid, SIGUSR1);
-                        // remove current pid
-                        free(dyn_array_get(pexchange->sigusr_pids, 0));
-                        dyn_array_delete(pexchange->sigusr_pids, 0);
-                        continue;
-                    }
-                    // store to orderbook
-                    order* new_order = store_product(pexchange, source, command_type, order_id, product_name, qty, price);
-                    // check INVALID
-                    if (new_order == NULL) {
-                        char* message;
-                        asprintf(&message, "INVALID;");
-                        write(source->exchange_pipe, message, strlen(message));
-                        free(message);
-                        // send signal
-                        kill(source->pid, SIGUSR1);
-                        free(dyn_array_get(pexchange->sigusr_pids, 0));
-                        dyn_array_delete(pexchange->sigusr_pids, 0);
-                        continue;
-                    }
-                    // update order_id
-                    source->last_order = order_id;
-                    // write to pipe
-                    char* message;
-                    asprintf(&message, "ACCEPTED %d;", order_id);
-                    write(source->exchange_pipe, message, strlen(message));
-                    free(message);
-                    // send signal
-                    kill(source->pid, SIGUSR1);
-                    // write to all other traders and send signals
-                    if (command_type == BUY)
-                        asprintf(&message, "MARKET BUY %s %ld %ld;", product_name, qty, price);
-                    else if (command_type == SELL)
-                        asprintf(&message, "MARKET SELL %s %ld %ld;", product_name, qty, price);
-                    tell_other_traders(pexchange, source->id, message);                
-                    free(message);
-                    // Try to match order
-                    match_order(pexchange, command_type, product_name, price, new_order, source);
-                    // print orderbook
-                    print_report(pexchange);
-                    break;
+                          if (price <= 0 || price > 999999 || \
+                                  qty <= 0 || qty > 999999 || \
+                                  order_id < 0 || order_id > 999999 || \
+                                  order_id != source->last_order + 1) {
+                              char* message;
+                              asprintf(&message, "INVALID;");
+                              write(source->exchange_pipe, message, strlen(message));
+                              free(message);
+                              // send signal
+                              kill(source->pid, SIGUSR1);
+                              // remove current pid
+                              free(dyn_array_get(pexchange->sigusr_pids, 0));
+                              dyn_array_delete(pexchange->sigusr_pids, 0);
+                              sigprocmask(SIG_UNBLOCK, &mask, NULL);
+                              continue;
+                          }
+                          // store to orderbook
+                          order* new_order = store_product(pexchange, source, command_type, order_id, product_name, qty, price);
+                          // check INVALID
+                          if (new_order == NULL) {
+                              char* message;
+                              asprintf(&message, "INVALID;");
+                              write(source->exchange_pipe, message, strlen(message));
+                              free(message);
+                              // send signal
+                              kill(source->pid, SIGUSR1);
+                              free(dyn_array_get(pexchange->sigusr_pids, 0));
+                              dyn_array_delete(pexchange->sigusr_pids, 0);
+                              sigprocmask(SIG_UNBLOCK, &mask, NULL);
+                              continue;
+                          }
+                          // update order_id
+                          source->last_order = order_id;
+                          // write to pipe
+                          char* message;
+                          asprintf(&message, "ACCEPTED %d;", order_id);
+                          write(source->exchange_pipe, message, strlen(message));
+                          free(message);
+                          // send signal
+                          kill(source->pid, SIGUSR1);
+                          // write to all other traders and send signals
+                          if (command_type == BUY)
+                              asprintf(&message, "MARKET BUY %s %ld %ld;", product_name, qty, price);
+                          else if (command_type == SELL)
+                              asprintf(&message, "MARKET SELL %s %ld %ld;", product_name, qty, price);
+                          tell_other_traders(pexchange, source->id, message);                
+                          free(message);
+                          // Try to match order
+                          match_order(pexchange, command_type, product_name, price, new_order, source);
+                          // print orderbook
+                          print_report(pexchange);
+                          break;
                 case AMEND:;
-                    // store everything in variables
-                    /* int order_id; */
-                    /* int qty; */
-                    /* int price; */
-                    if (sscanf(buffer, "%*s %d %ld %ld", &order_id, &qty, &price) != 3) {
-                        // printf("Malformed buffer: %s\n", buffer);
-                        char* message;
-                        asprintf(&message, "INVALID;");
-                        write(source->exchange_pipe, message, strlen(message));
-                        free(message);
-                        // send signal
-                        kill(source->pid, SIGUSR1);
-                        // remove current pid
-                        free(dyn_array_get(pexchange->sigusr_pids, 0));
-                        dyn_array_delete(pexchange->sigusr_pids, 0);
-                        continue;
-                    }
-                    // Error checking (for INVALID cases)
-                    // --> invalid price, qty or order_id
-                    // 1. price, order_id, qty
-                    if (price <= 0 || price > 999999 || \
-                            qty <= 0 || qty > 999999) {
-                        char* message;
-                        asprintf(&message, "INVALID;");
-                        write(source->exchange_pipe, message, strlen(message));
-                        free(message);
-                        // send signal
-                        kill(source->pid, SIGUSR1);
-                        // remove current pid
-                        free(dyn_array_get(pexchange->sigusr_pids, 0));
-                        dyn_array_delete(pexchange->sigusr_pids, 0);
-                        continue;
-                    }
-                    // Find the order to amend
-                    order* found = NULL;
-                    for (int i = 0; i < source->orders->size; i++) {
-                        order* current = (order*) dyn_array_get(source->orders, i);
-                        if (current->order_id == order_id) {
-                            found = current;
-                            break;
-                        }
-                    }
-                    // check if order is found
-                    if (found == NULL) {
-                        char* message;
-                        asprintf(&message, "INVALID;");
-                        write(source->exchange_pipe, message, strlen(message));
-                        free(message);
-                        // send signal
-                        kill(source->pid, SIGUSR1);
-                        // remove current pid
-                        free(dyn_array_get(pexchange->sigusr_pids, 0));
-                        dyn_array_delete(pexchange->sigusr_pids, 0);
-                        continue;
-                    }
-                    // Actually amend the found order
-                    amend_order(pexchange, found, qty, price);
-                    asprintf(&message, "AMENDED %d;", order_id);
-                    write(source->exchange_pipe, message, strlen(message));
-                    free(message);
-                    // send signal
-                    kill(source->pid, SIGUSR1);
-                    // tell all other traders
-                    message = NULL;
-                    if (found->order_type == BUY)
-                        asprintf(&message, "MARKET BUY %s %ld %ld;", found->prod->name, qty, price);
-                    else if (found->order_type == SELL)
-                        asprintf(&message, "MARKET SELL %s %ld %ld;", found->prod->name, qty, price);
-                    tell_other_traders(pexchange, source->id, message);
-                    free(message);
-                    print_report(pexchange);
-                    break;
+                           // store everything in variables
+                           /* int order_id; */
+                           /* int qty; */
+                           /* int price; */
+                           if (sscanf(buffer, "%*s %d %ld %ld", &order_id, &qty, &price) != 3) {
+                               // printf("Malformed buffer: %s\n", buffer);
+                               char* message;
+                               asprintf(&message, "INVALID;");
+                               write(source->exchange_pipe, message, strlen(message));
+                               free(message);
+                               // send signal
+                               kill(source->pid, SIGUSR1);
+                               // remove current pid
+                               free(dyn_array_get(pexchange->sigusr_pids, 0));
+                               dyn_array_delete(pexchange->sigusr_pids, 0);
+                               sigprocmask(SIG_UNBLOCK, &mask, NULL);
+                               continue;
+                           }
+                           // Error checking (for INVALID cases)
+                           // --> invalid price, qty or order_id
+                           // 1. price, order_id, qty
+                           if (price <= 0 || price > 999999 || \
+                                   qty <= 0 || qty > 999999) {
+                               char* message;
+                               asprintf(&message, "INVALID;");
+                               write(source->exchange_pipe, message, strlen(message));
+                               free(message);
+                               // send signal
+                               kill(source->pid, SIGUSR1);
+                               // remove current pid
+                               free(dyn_array_get(pexchange->sigusr_pids, 0));
+                               dyn_array_delete(pexchange->sigusr_pids, 0);
+                               sigprocmask(SIG_UNBLOCK, &mask, NULL);
+                               continue;
+                           }
+                           // Find the order to amend
+                           order* found = NULL;
+                           for (int i = 0; i < source->orders->size; i++) {
+                               order* current = (order*) dyn_array_get(source->orders, i);
+                               if (current->order_id == order_id) {
+                                   found = current;
+                                   break;
+                               }
+                           }
+                           // check if order is found
+                           if (found == NULL) {
+                               char* message;
+                               asprintf(&message, "INVALID;");
+                               write(source->exchange_pipe, message, strlen(message));
+                               free(message);
+                               // send signal
+                               kill(source->pid, SIGUSR1);
+                               // remove current pid
+                               free(dyn_array_get(pexchange->sigusr_pids, 0));
+                               dyn_array_delete(pexchange->sigusr_pids, 0);
+                               sigprocmask(SIG_UNBLOCK, &mask, NULL);
+                               continue;
+                           }
+                           // Actually amend the found order
+                           amend_order(pexchange, found, qty, price);
+                           asprintf(&message, "AMENDED %d;", order_id);
+                           write(source->exchange_pipe, message, strlen(message));
+                           free(message);
+                           // send signal
+                           kill(source->pid, SIGUSR1);
+                           // tell all other traders
+                           message = NULL;
+                           if (found->order_type == BUY)
+                               asprintf(&message, "MARKET BUY %s %ld %ld;", found->prod->name, qty, price);
+                           else if (found->order_type == SELL)
+                               asprintf(&message, "MARKET SELL %s %ld %ld;", found->prod->name, qty, price);
+                           tell_other_traders(pexchange, source->id, message);
+                           free(message);
+                           print_report(pexchange);
+                           break;
 
                 case CANCEL:
-                    if (sscanf(buffer, "%*s %d", &order_id) != 1) {
-                        // printf("Malformed buffer: %s\n", buffer);
-                        char* message;
-                        asprintf(&message, "INVALID;");
-                        write(source->exchange_pipe, message, strlen(message));
-                        free(message);
-                        // send signal
-                        kill(source->pid, SIGUSR1);
-                        // remove current pid
-                        free(dyn_array_get(pexchange->sigusr_pids, 0));
-                        dyn_array_delete(pexchange->sigusr_pids, 0);
-                        continue;
-                    }
-                    // Find the order to cancel
-                    found = NULL;
-                    for (int i = 0; i < source->orders->size; i++) {
-                        order* current = (order*) dyn_array_get(source->orders, i);
-                        if (current->order_id == order_id) {
-                            found = current;
-                            break;
-                        }
-                    }
-                    // check if order is found
-                    if (found == NULL) {
-                        char* message;
-                        asprintf(&message, "INVALID;");
-                        write(source->exchange_pipe, message, strlen(message));
-                        free(message);
-                        // send signal
-                        kill(source->pid, SIGUSR1);
-                        // remove current pid
-                        free(dyn_array_get(pexchange->sigusr_pids, 0));
-                        dyn_array_delete(pexchange->sigusr_pids, 0);
-                        continue;
-                    }
-                    // Actually cancel the order
-                    product* prod = found->prod;
-                    command type = found->order_type;
-                    cancel_order(pexchange, found);
-                    message = NULL;
-                    asprintf(&message, "CANCELLED %d;", order_id);
-                    write(source->exchange_pipe, message, strlen(message));
-                    free(message);
-                    // send signal
-                    kill(source->pid, SIGUSR1);
-                    // tell all other traders
-                    message = NULL;
-                    if (type == BUY)
-                        asprintf(&message, "MARKET BUY %s %d %d;", prod->name, 0, 0);
-                    else if (type == SELL)
-                        asprintf(&message, "MARKET SELL %s %d %d;", prod->name, 0, 0);
-                    tell_other_traders(pexchange, source->id, message);
-                    free(message);
-                    print_report(pexchange);
-                    break;
+                           if (sscanf(buffer, "%*s %d", &order_id) != 1) {
+                               // printf("Malformed buffer: %s\n", buffer);
+                               char* message;
+                               asprintf(&message, "INVALID;");
+                               write(source->exchange_pipe, message, strlen(message));
+                               free(message);
+                               // send signal
+                               kill(source->pid, SIGUSR1);
+                               // remove current pid
+                               free(dyn_array_get(pexchange->sigusr_pids, 0));
+                               dyn_array_delete(pexchange->sigusr_pids, 0);
+                               sigprocmask(SIG_UNBLOCK, &mask, NULL);
+                               continue;
+                           }
+                           // Find the order to cancel
+                           found = NULL;
+                           for (int i = 0; i < source->orders->size; i++) {
+                               order* current = (order*) dyn_array_get(source->orders, i);
+                               if (current->order_id == order_id) {
+                                   found = current;
+                                   break;
+                               }
+                           }
+                           // check if order is found
+                           if (found == NULL) {
+                               char* message;
+                               asprintf(&message, "INVALID;");
+                               write(source->exchange_pipe, message, strlen(message));
+                               free(message);
+                               // send signal
+                               kill(source->pid, SIGUSR1);
+                               // remove current pid
+                               free(dyn_array_get(pexchange->sigusr_pids, 0));
+                               dyn_array_delete(pexchange->sigusr_pids, 0);
+                               sigprocmask(SIG_UNBLOCK, &mask, NULL);
+                               continue;
+                           }
+                           // Actually cancel the order
+                           product* prod = found->prod;
+                           command type = found->order_type;
+                           cancel_order(pexchange, found);
+                           message = NULL;
+                           asprintf(&message, "CANCELLED %d;", order_id);
+                           write(source->exchange_pipe, message, strlen(message));
+                           free(message);
+                           // send signal
+                           kill(source->pid, SIGUSR1);
+                           // tell all other traders
+                           message = NULL;
+                           if (type == BUY)
+                               asprintf(&message, "MARKET BUY %s %d %d;", prod->name, 0, 0);
+                           else if (type == SELL)
+                               asprintf(&message, "MARKET SELL %s %d %d;", prod->name, 0, 0);
+                           tell_other_traders(pexchange, source->id, message);
+                           free(message);
+                           print_report(pexchange);
+                           break;
 
                 case INVALID:;
-                    char* inv_message;
-                    asprintf(&inv_message, "INVALID;");
-                    write(source->exchange_pipe, inv_message, strlen(inv_message));
-                    free(inv_message);
-                    // send signal
-                    kill(source->pid, SIGUSR1);
-                    break;
+                             char* inv_message;
+                             asprintf(&inv_message, "INVALID;");
+                             write(source->exchange_pipe, inv_message, strlen(inv_message));
+                             free(inv_message);
+                             // send signal
+                             kill(source->pid, SIGUSR1);
+                             break;
             }
             // remove current sigusr1 from backlog
             free(dyn_array_get(pexchange->sigusr_pids, 0));
@@ -424,10 +436,10 @@ int main(int argc, char** argv) {
     }
 
     /*
-    for (int i = 0; i < sigusr_pids->size; i++) {
-        printf("%ld\n", (long) *((pid_t*)sigusr_pids->array[i]));
-    }
-    */
+       for (int i = 0; i < sigusr_pids->size; i++) {
+       printf("%ld\n", (long) *((pid_t*)sigusr_pids->array[i]));
+       }
+       */
     return 0;
 }
 

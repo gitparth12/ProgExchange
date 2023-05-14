@@ -2,7 +2,7 @@
 #include "dyn_array.h"
 #include "pe_common.h"
 
-void* cancel_order(exchange* pexchange, order* to_cancel) {
+void cancel_order(exchange* pexchange, order* to_cancel) {
     /* printf("Inside cancel order: order_id:%d qty:%d\n", to_cancel->order_id, to_cancel->qty); */
     /* printf("address of order: %p\n", to_cancel); */
     /* printf("before delete order price: %d\n", to_cancel->price->value); */

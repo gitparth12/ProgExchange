@@ -622,10 +622,10 @@ void handle_products(dyn_array* product_list, FILE* fproducts, int* num_products
     fscanf(fproducts, "%d\n", num_products);
     printf("%s Trading %d products:", LOG_PREFIX, *num_products);
 
-    char temp[PRODUCT_NAME_SIZE + 1];
+    char temp[PRODUCT_NAME_SIZE + 2];
     for (int i = 0; i < *num_products; i++) {
         product* new_product = (product*) malloc(sizeof(product));
-        fgets(temp, PRODUCT_NAME_SIZE, fproducts);
+        fgets(temp, PRODUCT_NAME_SIZE + 2, fproducts);
         temp[strcspn(temp, "\n")] = 0;
         asprintf(&new_product->name, "%s", temp);
         new_product->buy_prices = dyn_array_init();

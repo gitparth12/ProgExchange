@@ -325,7 +325,7 @@ int main(int argc, char** argv) {
                     }
                     // Actually amend the found order
                     amend_order(pexchange, found, qty, price);
-                    asprintf(&message, "AMMENDED %d;", order_id);
+                    asprintf(&message, "AMENDED %d;", order_id);
                     write(source->exchange_pipe, message, strlen(message));
                     free(message);
                     // send signal

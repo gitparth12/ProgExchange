@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
                 sigprocmask(SIG_UNBLOCK, &mask, NULL);
                 continue;
             }
-            printf("spaces: %d\n", spaces);
+            /* printf("spaces: %d\n", spaces); */
 
 
             // check if message fits in max buffer size

@@ -162,10 +162,11 @@ int main(int argc, char** argv) {
                 continue;
             }
             // scan input from that trader's pipe
-            char* buffer = NULL;
+            // char* buffer = NULL;
+            char buffer[BUF_SIZE] = { 0 };
             // read_command(source->trader_pipe, buffer);
             int spaces;
-            if ((buffer = read_dynamic(source->trader_pipe, &spaces)) == NULL) {
+            if ((spaces = read_command(source->trader_pipe, buffer)) == -1) {
                 printf("Couldn't read from trader pipe.\n");
                 perror("read error: ");
                 free(dyn_array_get(pexchange->sigusr_pids, 0));
@@ -177,14 +178,15 @@ int main(int argc, char** argv) {
 
 
             // check if message fits in max buffer size
-            /* if (buffer[BUF_SIZE-1] != '\0') { */
-            /*     printf("\nMessage from trader too long\n"); */
-            /*     printf("%s\n\n", buffer); */
-            /*     free(dyn_array_get(pexchange->sigusr_pids, 0)); */
-            /*     dyn_array_delete(pexchange->sigusr_pids, 0); */
-            /*     sigprocmask(SIG_UNBLOCK, &mask, NULL); */
-            /*     continue; */
-            /* } */
+            if (buffer[BUF_SIZE-1] != '\0') {
+                printf("\nMessage from trader too long\n");
+                printf("%s\n\n", buffer);
+                free(dyn_array_get(pexchange->sigusr_pids, 0));
+                dyn_array_delete(pexchange->sigusr_pids, 0);
+                sigprocmask(SIG_UNBLOCK, &mask, NULL);
+                continue;
+            }
+
             // PROCESS MESSAGE
             command command_type;
             if ((strncmp(buffer, "BUY", strlen("BUY"))) == 0) {
@@ -433,8 +435,6 @@ int main(int argc, char** argv) {
 
             // unblock signal
             sigprocmask(SIG_UNBLOCK, &mask, NULL);
-            // free buffer
-            free(buffer);
         }
     }
 

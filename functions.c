@@ -415,7 +415,6 @@ order* store_product(exchange* pexchange, trader* source, command command_type, 
     switch (command_type) {
         case BUY:
             prod_price = dyn_array_get_price_entry(prod->buy_prices, price);
-            new_order->price = prod_price;
             if (prod_price == NULL) { // create a new price_entry
                 price_entry* new_price = (price_entry*) malloc(sizeof(price_entry));
                 new_price->value = price;
@@ -423,27 +422,32 @@ order* store_product(exchange* pexchange, trader* source, command command_type, 
                 // add new_order to the new price_entry
                 new_order->index = new_price->orders->size;
                 dyn_array_add(new_price->orders, (void*) new_order);
+                new_order->price = new_price;
                 // add the price to prices
                 dyn_array_add_price(prod->buy_prices, (void*) new_price);
             }
             else { // means price_entry exists
                 new_order->index = prod_price->orders->size;
+                new_order->price = prod_price;
                 dyn_array_add(prod_price->orders, (void*) new_order);
             }
             break;
         case SELL:
             prod_price = dyn_array_get_price_entry(prod->sell_prices, price);
-            new_order->price = prod_price;
             if (prod_price == NULL) { // create a new price_entry
                 price_entry* new_price = (price_entry*) malloc(sizeof(price_entry));
                 new_price->value = price;
                 new_price->orders = dyn_array_init();
                 // add new_order to the new price_entry
+                new_order->index = new_price->orders->size;
                 dyn_array_add(new_price->orders, (void*) new_order);
+                new_order->price = new_price;
                 // add the price to prices
                 dyn_array_add_price(prod->sell_prices, (void*) new_price);
             }
             else { // means price_entry exists
+                new_order->index = prod_price->orders->size;
+                new_order->price = prod_price;
                 dyn_array_add(prod_price->orders, (void*) new_order);
             }
             break;

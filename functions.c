@@ -538,6 +538,7 @@ char* read_dynamic(int fd, int* spaces) {
     buflen++;
     allocated = (char*) realloc(allocated, buflen * sizeof(char));
     allocated[buflen-1] = '\0';
+    printf("Read: %s\n", allocated);
     return allocated;
 }
 

@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
             sigprocmask(SIG_BLOCK, &mask, NULL);
 
             /* pid_t pid = *((pid_t*) dyn_array_get(sigusr_pids, 0)); */
-            // Read from exchange pipe
+                // Read from exchange pipe
             read(exchange_pipe, message, BUF_SIZE);
 
             if (strncmp(message, "MARKET SELL ", strlen("MARKET SELL ")) == 0) {
